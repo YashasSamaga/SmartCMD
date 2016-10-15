@@ -1,7 +1,7 @@
 /*******************************************************************************************************************************
  Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: beta 15th October
+ Version: 0.3.0 (October 11th 2016)
 
  GitHub Link: https://github.com/YashasSamaga/iZCMD-Plus
 *******************************************************************************************************************************/
@@ -115,17 +115,6 @@ static offsetDAT, offsetPFT, offsetNFT, offsetPVT, offsetTAGS, number_of_publics
 /******************************************************************************************************************************/
 static LoadString(addr, str[])
 {
-	new x[100];
-	strunpack(x, str);
-	
-	#emit push.c 100
-	#emit push.c addr
-	#emit push.adr x
-	#emit push.c 12
-	#emit sysreq.c strunpack
-	#emit stack 10
-	
-	printf("%s", x);
 	new chr, j;
     do
    	{
