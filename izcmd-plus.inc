@@ -1,7 +1,7 @@
 /*******************************************************************************************************************************
  Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: beta (October 15th 2016)
+ Version: beta  (October 18th 2016)
 
  GitHub Link: https://github.com/YashasSamaga/iZCMD-Plus
 *******************************************************************************************************************************/
@@ -26,12 +26,12 @@ const CMD_DEFAULT_FLAG = 0;
 			CMD%0:%1(%2)
 
 #define command%0(%1,%2,%3,%4) \
-		COMMAND%0:%1(%2, %3, %4)
+			CMD%0:%1(%2, %3, %4)
 
 #define cmd%0(%1,%2,%3,%4) \
-		COMMAND%0:%1(%2, %3, %4)
+			CMD%0:%1(%2, %3, %4)
 
-#define ALT:%0:%1; \
+#define ALT:%1=%2CMD:%0; \
 		_CreateCommandFlags(%1,)\
 		_CreateCommandIDVar(%1) \
 		_CreateCommandAltvar(%0,%1) \
@@ -80,13 +80,13 @@ const CMD_DEFAULT_FLAG = 0;
 	forward OnPlayerCommandPerformed(cmdid, playerid, cmdtext[], success);
 #endif
 /******************************************************************************************************************************/
-enum (<<=1)
+enum CommandProperties (<<=1)
 {
 	COMMAND_ENABLED = 1,
 	COMMAND_HAS_ALTERNATE,
 	COMMAND_IS_ALTERNATE
 }
-static izcmd_cmd_properties[MAX_COMMANDS];
+static CommandProperties:izcmd_cmd_properties[MAX_COMMANDS];
 
 #define _IsCommandPropertySet(%0,%1)            ((izcmd_cmd_properties[%0]) & (%1))
 #define _SetCommandProperty(%0,%1)             ((izcmd_cmd_properties[%0]) |= (%1))
@@ -390,20 +390,65 @@ static izcmd_Init()
 /******************************************************************************************************************************/
 public OnPlayerCommandText(playerid, cmdtext[])
 {
-	static prefix[3] = {'c', 'm', 'd'}, funcname[MAX_CLIENT_MSG_LENGTH] = "_";
-	new pos = 1, tmp, cmdid, retval;
+	static prefix[4] = {'c', 'm', 'd', '_'}, funcname[MAX_CLIENT_MSG_LENGTH - 4];
+	new cmdid, tmp, addr, faddr;
+	
+	#emit CONST.pri funcname
+	#emit STOR.S.pri faddr
+	
+	#emit LOAD.S.pri cmdtext
+	#emit ADD.C 4
+	#emit STOR.S.pri addr
 
-	while((tmp = cmdtext[pos]) > ' ')
+	#emit LOAD.I
+	#emit STOR.S.pri tmp
+
+	while(tmp > ' ')
 	{
-		#if !defined IZCMD_ENABLE_CASE_SENSITIVITY
-			if('A' <= tmp <= 'Z') funcname[pos++] = tmp | 0x20;
-			else
+	    #if !defined IZCMD_ENABLE_CASE_SENSITIVITY
+		if('A' <= tmp <= 'Z')
+		{
+		    #emit LOAD.S.pri tmp
+		    #emit CONST.alt 32
+		    #emit OR
+		    
+		    #emit LOAD.S.alt faddr
+		    #emit STOR.I
+		}
+		else
 		#endif
-				funcname[pos++] = tmp;
-	}
-	funcname[pos] = 0;
+		
+		{
+			#emit LOAD.S.alt faddr
+		    #emit LOAD.S.pri tmp
+		    #emit STOR.I
 
-	while (cmdtext[pos] == ' ') pos++;
+		}
+        #emit LOAD.S.pri faddr
+		#emit ADD.C 4
+		#emit STOR.S.pri faddr
+			
+		#emit LOAD.S.pri addr
+		#emit ADD.C 4
+		#emit STOR.S.pri addr
+		
+		#emit LOAD.I
+		#emit STOR.S.pri tmp
+	}
+	
+	#emit LOAD.S.alt faddr
+	#emit ZERO.pri
+	#emit STOR.I
+
+	while (tmp == ' ')
+	{
+	    #emit LOAD.S.pri addr
+		#emit ADD.C 4
+		#emit STOR.S.pri addr
+
+		#emit LOAD.I
+		#emit STOR.S.pri tmp
+	}
 
 	if((tmp = funcidx(prefix)) != -1)
 	{
@@ -413,10 +458,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 				if(!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
 			#endif
 
-			#emit LOAD.S.alt cmdtext
-			#emit LOAD.S.pri pos
-			#emit IDXADDR
-			#emit PUSH.pri
+			#emit PUSH.S addr
 			#emit PUSH.S playerid
 			#emit PUSH.S cmdid
 			#emit PUSH.C 12
@@ -430,12 +472,12 @@ public OnPlayerCommandText(playerid, cmdtext[])
 			#emit LIDX
 			#emit SCTRL      6
 
-			#emit STOR.S.pri retval
+			#emit STOR.S.pri tmp
 
 			#if defined OnPlayerCommandPerformed
-				return OnPlayerCommandPerformed(cmdid, playerid, cmdtext, retval);
+				return OnPlayerCommandPerformed(cmdid, playerid, cmdtext, tmp);
 			#else
-				return retval;
+				return tmp;
 			#endif
 		}
 	}
@@ -1120,7 +1162,8 @@ stock _izcmdp_register_alias(ocmdid, acmdid)
 	izcmd_cmd_id_pidx_map[acmdid] = izcmd_cmd_id_pidx_map[ocmdid];
 	izcmd_cmd_id_pid_map[acmdid] = ocmdid;
    	oaddr = izcmd_cmd_paddress[acmdid] = izcmd_cmd_paddress[ocmdid];
-
+    izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
+    
 	#emit LOAD.pri offsetPFT
 	#emit LOAD.S.alt  aidx
 	#emit SHL.C.alt   3
