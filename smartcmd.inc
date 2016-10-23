@@ -11,9 +11,13 @@
 #define _SCMDP_INCLUDED
 #define _SCMDP_INCLUDED_V0_3_0_0_
 /******************************************************************************************************************************/
-const CMD_DEFAULT_FLAG = 0;
+#if !defined CMD_DEFAULT_FLAG
+	#define CMD_DEFAULT_FLAG 0
+#endif
 
-#define CMD_DEFAULT_FLAG%9_@REMOVE@_<%1> %1
+const _@CMD_DEFAULT_FLAG = CMD_DEFAULT_FLAG;
+
+#define _@CMD_DEFAULT_FLAG%9_@REMOVE@_<%1> %1
 #define _@REMOVE@_
 
 #define CMD%0:%1(%2) \
@@ -44,7 +48,7 @@ const CMD_DEFAULT_FLAG = 0;
 			stock cid@%0=cid_%0;
 
 #define _CreateCommandFlags(%0,%1) \
-			public flg_%0=CMD_DEFAULT_FLAG _@REMOVE@_%1 ; \
+			public flg_%0=_@CMD_DEFAULT_FLAG _@REMOVE@_%1 ; \
 			stock flg@%0=flg_%0;
 
 #define _CreateCommandAltvar(%0,%1) \
@@ -392,10 +396,10 @@ public OnPlayerCommandText(playerid, cmdtext[])
 {
 	static prefix[4] = {'c', 'm', 'd', '_'}, funcname[MAX_CLIENT_MSG_LENGTH - 4];
 	new cmdid, tmp, addr, faddr;
-	
+
 	#emit CONST.pri funcname
 	#emit STOR.S.pri faddr
-	
+
 	#emit LOAD.S.pri cmdtext
 	#emit ADD.C 4
 	#emit STOR.S.pri addr
@@ -411,13 +415,13 @@ public OnPlayerCommandText(playerid, cmdtext[])
 		    #emit LOAD.S.pri tmp
 		    #emit CONST.alt 32
 		    #emit OR
-		    
+
 		    #emit LOAD.S.alt faddr
 		    #emit STOR.I
 		}
 		else
 		#endif
-		
+
 		{
 			#emit LOAD.S.alt faddr
 		    #emit LOAD.S.pri tmp
@@ -427,15 +431,15 @@ public OnPlayerCommandText(playerid, cmdtext[])
         #emit LOAD.S.pri faddr
 		#emit ADD.C 4
 		#emit STOR.S.pri faddr
-			
+
 		#emit LOAD.S.pri addr
 		#emit ADD.C 4
 		#emit STOR.S.pri addr
-		
+
 		#emit LOAD.I
 		#emit STOR.S.pri tmp
 	}
-	
+
 	#emit LOAD.S.alt faddr
 	#emit ZERO.pri
 	#emit STOR.I
@@ -582,7 +586,7 @@ stock GetCommandID(const cmd[])
 		</code>
 	</example>
 *******************************************************************************************************************************/
-stock GetCommandName(cmdid, cmd[], len = sizeof(cmd)) 
+stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 {
 	if(!(0 <= cmdid < izcmd_cmd_total_count)) return 0;
 
@@ -1163,7 +1167,7 @@ stock _izcmdp_register_alias(ocmdid, acmdid)
 	izcmd_cmd_id_pid_map[acmdid] = ocmdid;
    	oaddr = izcmd_cmd_paddress[acmdid] = izcmd_cmd_paddress[ocmdid];
     izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
-    
+
 	#emit LOAD.pri offsetPFT
 	#emit LOAD.S.alt  aidx
 	#emit SHL.C.alt   3
