@@ -514,6 +514,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	native IsCommandEnabled(cmdid)
 	native SetCommandFlags(cmdid, flags)
 	native GetCommandFlags(cmdid)
+	native SetPointingCommandIDToSelf(cmdid)
 	native ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = true, bool:updatePFT = false)
 	native EmulateCommandEx(cmdid, playerid, params[])
 	native EmulateCommand(playerid, cmdtext[])
@@ -922,7 +923,7 @@ stock SetCommandFlags(cmdid, flags)
 }
 
 /*******************************************************************************************************************************
-	<summary>GetCommandID</summary>
+	<summary>GetCommandFlags</summary>
 	<para>gets the given command's flags</para>
 	<param name="cmdid">command id</param>
 	<returns>
@@ -948,6 +949,49 @@ stock GetCommandFlags(cmdid)
 }
 
 /*******************************************************************************************************************************
+	<summary>SetPointingCommandIDToSelf</summary>
+	<para>Forces the command to point itself without changing other parameters</para>
+	<param name="cmdid">command id</param>
+	<returns>
+		the command's flags or INVALID_COMMAND_ID if the command id passed is invalid.
+	</returns>
+	<remarks>
+		This can also be used to dealternatize an alternate command or convert an alternate command to a reassigned command.
+	</remarks>
+	<example>
+		<code>
+            SetPointingCommandIDToSelf(cid_spec);
+		</code>
+	</example>
+*******************************************************************************************************************************/
+stock SetPointingCommandIDToSelf(cmdid)
+{
+    if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+    
+	if(_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
+	{
+		new ocmdid = izcmd_cmd_id_pidx_map[cmdid];
+
+		_UnsetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
+		_UnsetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+
+		for(new id = 0; id < izcmd_cmd_total_count; id++)
+		{
+			if(id == ocmdid) continue;
+			if(id == cmdid) continue;
+
+			if(izcmd_cmd_id_pidx_map[id] == cmdid)
+			{
+				_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+				break;
+			}
+		}
+	}
+    izcmd_cmd_id_pid_map[cmdid] = cmdid;
+	return 1;
+}
+
+/*******************************************************************************************************************************
 	<summary>ReassignCommandFunction</summary>
 	<para>checks if a command exists</para>
 	<param name="cmdid">command id</param>
@@ -960,6 +1004,9 @@ stock GetCommandFlags(cmdid)
 		INVALID_COMMAND_ID if the command id passed is invalid.
 		1 on success and 0 on failure.
 	</returns>
+	<remarks>
+	    Reassigning a command will indirectly have all its alternate commands reassigned
+	</remarks>
 	<example>
 		<code>
 			//custom command disable
