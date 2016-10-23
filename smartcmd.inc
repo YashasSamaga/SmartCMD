@@ -1,15 +1,15 @@
 /*******************************************************************************************************************************
- Improved ZCMD Plus (iZCMD+)
+ SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: beta  (October 18th 2016)
+ Version: 0.3
 
- GitHub Link: https://github.com/YashasSamaga/iZCMD-Plus
+ GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
-#if defined _I_ZCMDP_INCLUDED
+#if defined _SCMD_INCLUDED
 	#endinput
 #endif
-#define _I_ZCMDP_INCLUDED
-#define _I_ZCMDP_INCLUDED_V0_3_0_0_
+#define _SCMDP_INCLUDED
+#define _SCMDP_INCLUDED_V0_3_0_0_
 /******************************************************************************************************************************/
 const CMD_DEFAULT_FLAG = 0;
 
