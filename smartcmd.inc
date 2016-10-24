@@ -1,15 +1,15 @@
 /*******************************************************************************************************************************
  SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: 0.3
+ Version: 0.3 (24th October)
 
  GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
 #if defined _SCMD_INCLUDED
 	#endinput
 #endif
-#define _SCMDP_INCLUDED
-#define _SCMDP_INCLUDED_V0_3_0_0_
+#define _SCMD_INCLUDED
+#define _SCMD_INCLUDED_V0_3_0_0_
 /******************************************************************************************************************************/
 #if !defined CMD_DEFAULT_FLAG
 	#define CMD_DEFAULT_FLAG 0
@@ -44,8 +44,7 @@ const _@CMD_DEFAULT_FLAG = CMD_DEFAULT_FLAG;
 			return _izcmdp_register_alias(GetCommandID(#%0), cmdid);
 
 #define _CreateCommandIDVar(%0) \
-			public cid_%0=-1; \
-			stock cid@%0=cid_%0;
+			public stock const cid_%0=-1;
 
 #define _CreateCommandFlags(%0,%1) \
 			public flg_%0=_@CMD_DEFAULT_FLAG _@REMOVE@_%1 ; \
@@ -66,7 +65,7 @@ const _@CMD_DEFAULT_FLAG = CMD_DEFAULT_FLAG;
 #define MAX_COMMAND_NAME            (28)
 
 #if !defined MAX_PUBLIC_FUNCTIONS
-	#define MAX_PUBLIC_FUNCTIONS	(2048)
+	#define MAX_PUBLIC_FUNCTIONS	(1024)
 #endif
 
 #if !defined MAX_COMMANDS
@@ -106,7 +105,6 @@ static izcmd_cmd_id_pid_map[MAX_COMMANDS] = {INVALID_COMMAND_ID, INVALID_COMMAND
 
 //Per-Command Properties
 static izcmd_cmd_funcname[MAX_COMMANDS][MAX_FUNC_NAME];
-static izcmd_cmd_oaddress[MAX_COMMANDS] = {-1, -1, -1, ...};
 static izcmd_cmd_paddress[MAX_COMMANDS] = {-1, -1, -1, ...};
 static izcmd_cmd_flags[MAX_COMMANDS][1];
 
@@ -222,7 +220,7 @@ static izcmd_Init()
 		izcmd_cmd_id_oidx_map[izcmd_cmd_total_count] = izcmd_cmd_id_pidx_map[izcmd_cmd_total_count] = pubfunc_idx;
 
 		_SetCommandProperty(izcmd_cmd_total_count, COMMAND_ENABLED);
-		izcmd_cmd_paddress[izcmd_cmd_total_count] = izcmd_cmd_oaddress[izcmd_cmd_total_count] = addr;
+		izcmd_cmd_paddress[izcmd_cmd_total_count] = addr;
 
 		izcmd_cmd_total_count++;
 		izcmd_cmd_enabled_count++;
@@ -515,7 +513,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	native SetCommandFlags(cmdid, flags)
 	native GetCommandFlags(cmdid)
 	native SetPointingCommandIDToSelf(cmdid)
-	native ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = true, bool:updatePFT = false)
+	native ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, bool:updatePFT = false)
 	native EmulateCommandEx(cmdid, playerid, params[])
 	native EmulateCommand(playerid, cmdtext[])
 */
@@ -967,7 +965,7 @@ stock GetCommandFlags(cmdid)
 stock SetPointingCommandIDToSelf(cmdid)
 {
     if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-    
+
 	if(_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
 	{
 		new ocmdid = izcmd_cmd_id_pidx_map[cmdid];
@@ -997,7 +995,7 @@ stock SetPointingCommandIDToSelf(cmdid)
 	<param name="cmdid">command id</param>
 	<param name="funcname">name of the function to which the command has to be assigned to</param>
 	<param name="updateCID">if the function name is a command function, this option allows you to allow the comamnd (whose id is cmdid)
-							to	pretend (alternate command) like the command whose function name was passed. (true by default)</param>
+							to	pretend (alternate command) like the command whose function name was passed. (false by default)</param>
 	<param name="updatePFT">Updates the public function table which makes CallLocalFunction/CallRemoteFunction execute the function
 							whose name is funcname when asked to call the command (false by default)</param>
 	<returns>
@@ -1028,7 +1026,7 @@ stock SetPointingCommandIDToSelf(cmdid)
 		</code>
 	</example>
 *******************************************************************************************************************************/
-stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = true, bool:updatePFT = false)
+stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, bool:updatePFT = false)
 {
 	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
