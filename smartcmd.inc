@@ -1,7 +1,7 @@
 /*******************************************************************************************************************************
  SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: 0.3 (24th October)
+ Version: 0.3 beta (4th November)
 
  GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
@@ -20,11 +20,11 @@ const _@CMD_DEFAULT_FLAG = CMD_DEFAULT_FLAG;
 #define _@CMD_DEFAULT_FLAG%9_@REMOVE@_<%1> %1
 #define _@REMOVE@_
 
+#define cmd_%0\32;%1( cmd_%1(
+#define cmdret:cmd_%0[%1](%2);%9<%9>%9<%9> cmdret:cmd_%0(%2);public cmdret:cmd_%0(%2)<cmdMode:%1>
+
 #define CMD%0:%1(%2) \
-			_CreateCommandFlags(%1,%0) \
-			_CreateCommandIDVar(%1) \
-			forward cmd_%1(%2); \
-			public cmd_%1(%2)
+            forward cmdret:cmd_%1(%2);public cmdret:cmd_%1(%2)<>return cmdret:cellmin;CVARS(%1,%0)public cmdret:cmd_%1(%2)<cmdMode:normal>
 
 #define COMMAND%0:%1(%2) \
 			CMD%0:%1(%2)
@@ -34,28 +34,34 @@ const _@CMD_DEFAULT_FLAG = CMD_DEFAULT_FLAG;
 
 #define cmd%0(%1,%2,%3,%4) \
 			CMD%0:%1(%2, %3, %4)
+			
+#define cid_%0[%1] cid_%0
+#define flg_%0[%1] flg_%0
+#define flg@%0[%1] flg@%0
+
+#define CVARS(%1,%0) _CCF(flg_%1,flg@%1,%0)_CCID(cid_%1)
 
 #define ALT:%1=%2CMD:%0; \
-		_CreateCommandFlags(%1,)\
-		_CreateCommandIDVar(%1) \
-		_CreateCommandAltvar(%0,%1) \
+  		_CCF(flg_%1,flg@%1,)\
+		_CCID(cid_%1) \
+		_CCAV(%0,%1) \
 		forward cmd_%1(cmdid, playerid, params[]);\
 		public cmd_%1(cmdid, playerid, params[])\
 			return _izcmdp_register_alias(GetCommandID(#%0), cmdid);
 
-#define _CreateCommandIDVar(%0) \
-			public stock const cid_%0=-1;
+#define _CCID(%0) \
+			public stock const %0=-1;
 
-#define _CreateCommandFlags(%0,%1) \
-			public flg_%0=_@CMD_DEFAULT_FLAG _@REMOVE@_%1 ; \
-			stock flg@%0=flg_%0;
-
-#define _CreateCommandAltvar(%0,%1) \
-			public alt_%1= 0; \
+#define _CCF(%0,%1,%2) \
+			public %0=_@CMD_DEFAULT_FLAG _@REMOVE@_%2 ; \
+			stock %1=%0;
+			
+#define _CCAV(%0,%1) \
+			public alt_%1=0; \
 			stock alt@%1=alt_%1;
 
-#define CMD_SUCCESS 1
-#define CMD_FAILURE 0
+#define CMD_SUCCESS cmdret:1
+#define CMD_FAILURE cmdret:0
 
 #define INVALID_COMMAND_ID			(-1)
 
@@ -115,6 +121,9 @@ static izcmd_cmd_enabled_count = 0;
 //Internal Variables
 static offsetDAT, offsetPFT, offsetNFT, offsetPVT, offsetTAGS, number_of_publics, number_of_pubvars;
 /******************************************************************************************************************************/
+static stock _dummy() <> return 0;
+static stock _dummy() <cmdMode:normal> return 0;
+
 static LoadString(addr, str[])
 {
 	new chr, j;
@@ -131,6 +140,8 @@ static LoadString(addr, str[])
 static izcmd_Init()
 {
 	new addr, tmp, cmd_name[MAX_FUNC_NAME] = "cmd_", bool:crash = false;
+
+    state cmdMode:normal;
 
 	#emit LCTRL 1
 	#emit NEG
@@ -394,6 +405,8 @@ public OnPlayerCommandText(playerid, cmdtext[])
 {
 	static prefix[4] = {'c', 'm', 'd', '_'}, funcname[MAX_CLIENT_MSG_LENGTH - 4];
 	new cmdid, tmp, addr, faddr;
+
+	state cmdMode:normal;
 
 	#emit CONST.pri funcname
 	#emit STOR.S.pri faddr
@@ -943,7 +956,14 @@ stock SetCommandFlags(cmdid, flags)
 stock GetCommandFlags(cmdid)
 {
 	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	return izcmd_cmd_flags[cmdid][0];
+	
+	#emit CONST.alt izcmd_cmd_flags
+	#emit LOAD.S.pri cmdid
+	#emit LIDX
+	#emit LOAD.I
+	#emit RETN
+	
+	return  izcmd_cmd_flags[cmdid][0];
 }
 
 /*******************************************************************************************************************************
@@ -1093,7 +1113,57 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 	}
 	return 1;
 }
+/*******************************************************************************************************************************
+	<summary>ExecuteCommand</summary>
+	<para>Executes a command's function with the given mode/state</para>
+	<param name="cmd[]">Command name</param>
+	<param name="state[]">Mode/State</param>
+	<param name="playerid">player id (sender)</param>
+	<param name="params[]">Command parameters</param>
+	<returns>
+		INVALID_COMMAND_ID if the command does not exist.
+		cellmin if the command does not exist.
+		The value returned by the command.
+	</returns>
+	<example>
+		<code>
+			ExecuteCommand("pm","help",playerid,"");
+		</code>
+	</example>
+*******************************************************************************************************************************/
+#define ExecuteCommand(%0,"%1",%2,%3) state cmdMode:%1;_ExecuteCommand(%0,%2,%3)
 
+stock _ExecuteCommand(cmd[], playerid, params[])
+{
+	new cmdid = GetCommandID(cmd), pos;
+	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+
+	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+	{
+		while (params[pos] == ' ') pos++;
+
+		#emit LOAD.S.alt params
+		#emit LOAD.S.pri pos
+		#emit IDXADDR
+		#emit PUSH.pri
+		#emit PUSH.S playerid
+		#emit PUSH.S cmdid
+		#emit PUSH.C 12
+
+		#emit LCTRL      6
+		#emit ADD.C      40
+		#emit PUSH.pri
+
+		#emit CONST.alt izcmd_cmd_paddress
+		#emit LOAD.S.pri cmdid
+		#emit LIDX
+		#emit SCTRL      6
+
+		#emit STACK 8
+		#emit RETN
+	}
+	return cellmin;
+}
 /*******************************************************************************************************************************
 	<summary>EmulateCommand</summary>
 	<para>Emulates a command (fakes a player sending a command)</para>
@@ -1157,6 +1227,8 @@ stock EmulateCommandEx(cmdid, playerid, params[])
 		strcat(cmdtext, params);
 		while (params[pos] == ' ') pos++;
 	}
+
+	state cmdMode:normal;
 
 	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 	{
