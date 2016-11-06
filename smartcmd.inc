@@ -1119,11 +1119,13 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 	<param name="cmd[]">Command name</param>
 	<param name="state[]">Mode/State</param>
 	<param name="playerid">player id (sender)</param>
-	<param name="params[]">Command parameters</param>
-	<returns>
+	<param name="success"> reference variable which will be set according to the rules give below:
 		INVALID_COMMAND_ID if the command does not exist.
 		cellmin if the command does not exist.
-		The value returned by the command.
+		The value returned by the command.</param>
+	<param name="params[]">Command parameters</param>
+	<returns>
+		0 always
 	</returns>
 	<example>
 		<code>
@@ -1131,12 +1133,16 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 		</code>
 	</example>
 *******************************************************************************************************************************/
-#define ExecuteCommand(%0,"%1",%2,%3) state cmdMode:%1;_ExecuteCommand(%0,%2,%3)
+#define ExecuteCommand(%0,"%1",%2,%3,%4) state cmdMode:%1;_ExecuteCommand(%0,%2,%3,%4)
 
-stock _ExecuteCommand(cmd[], playerid, params[])
+stock _ExecuteCommand(cmd[], playerid, &success, params[]="")
 {
 	new cmdid = GetCommandID(cmd), pos;
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if(!(0 <= cmdid < izcmd_cmd_total_count))
+	{
+	    success = INVALID_COMMAND_ID;
+		return 0;
+	}
 
 	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 	{
@@ -1159,10 +1165,13 @@ stock _ExecuteCommand(cmd[], playerid, params[])
 		#emit LIDX
 		#emit SCTRL      6
 
+		#emit STOR.S.pri success
+
 		#emit STACK 8
 		#emit RETN
 	}
-	return cellmin;
+	success = cellmin;
+	return 0;
 }
 /*******************************************************************************************************************************
 	<summary>EmulateCommand</summary>
