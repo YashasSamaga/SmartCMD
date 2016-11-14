@@ -5,8 +5,13 @@
 #include <izcmd>
 /*******************************************************************************************************/
 #define ITR 100000
-#define ADMIN_COMMAND_FLAG 1234
 /*******************************************************************************************************/
+enum flags (*=2)
+{
+	ADMIN_COMMAND_FLAG = 1,
+	TEST1,
+	TEST2
+}
 CMD<ADMIN_COMMAND_FLAG>:aaaa[params](cmdid, playerid, params[])
 {
 	printf("[AAAA]params cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
@@ -19,15 +24,15 @@ CMD<ADMIN_COMMAND_FLAG>:aaaa[help](cmdid, playerid, params[])
 }
 CMD<ADMIN_COMMAND_FLAG>:aaaa(cmdid, playerid, params[])
 {
+	flg_aaaa = flags:0;
 	//printf("[AAAA]normal cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
-	return CMD_SUCCESS;
+	return 1;
 }
 ALT:altname = CMD:aaaa;
 /*******************************************************************************************************/
-
 main()
 {
- //---TESTING---//
+ 	//---TESTING---//
 	if(DoesCommandExist("aaaa") == false) print("[TEST1] DoesCommandExist failed.");
 	if(DoesCommandExist("aa1234567aa") == true) print("[TEST2] DoesCommandExist failed.");
 	if(GetCommandID("aaaa") != cid_aaaa) print("[TEST3] GetCommandID failed.");
@@ -60,7 +65,8 @@ main()
 
 	if(GetCommandFlags(cid_aaaa) != ADMIN_COMMAND_FLAG) printf("[TEST17] GetCommandFlags failed. %d");
 
-	ExecuteCommand("aaaa","help", 0, "");
+	new success;
+	ExecuteCommand("aaaa", help, 0, success, "");
 
 	//ReassignCommandFunction(cid_aaaa, "cmd_aaab", true);
 	//EmulateCommand(10, "/aaaa testX");
@@ -110,7 +116,7 @@ CMD:aaab(cmdid, playerid, params[])
 }
 CMD:aaac(cmdid, playerid, params[])
 {
-	return CMD_SUCCESS;
+	return CMD_FAILURE;
 }
 CMD:aaad(cmdid, playerid, params[])
 {
