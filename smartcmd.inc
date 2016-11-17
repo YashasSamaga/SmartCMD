@@ -1,7 +1,7 @@
 /*******************************************************************************************************************************
  SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: 0.3 beta (14th November)
+ Version: 0.3 beta (17th November)
 
  GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
@@ -12,20 +12,21 @@
 #define _SCMD_INCLUDED_V0_3_0_0_
 /******************************************************************************************************************************/
 #if !defined CMD_DEFAULT_FLAG
-	#define CMD_DEFAULT_FLAG 0
+    #define CMD_DEFAULT_FLAG 0
 #endif
 
-const flags:_@CMD_DEFAULT_FLAG = flags:(CMD_DEFAULT_FLAG);
+const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 
 #define cid_%0\32;%1; cid_%0%1
 #define flg_%0\32;%1; flg_%0%1
 #define flg@%0\32;%1; flg@%0%1
 #define alt_%0\32;%1; alt_%0%1
 #define alt@%0\32;%1; alt@%0%1
+#define tag@%0\32;%1; tag@%0%1
 #define cmd_%0\32;%1( cmd_%1(
 
 #define CMD%0:%1(%2)                                                            \
-            CVARS(%0,%1,%2)forward cmd_%1(%2);public cmd_%1(%2)<>return izcmd_cmd_handled=0;public cmd_%1(%2)<cmdMode:normal>
+            forward _CCCM:tag@%1();CVARS(%0,%1,%2)forward cmd_%1(%2);public cmd_%1(%2)<>return izcmd_cmd_handled=0;public cmd_%1(%2)<cmdMode:normal>
 
 #define COMMAND%0:%1(%2)                                                        \
             CMD%0:%1(%2)
@@ -36,13 +37,13 @@ const flags:_@CMD_DEFAULT_FLAG = flags:(CMD_DEFAULT_FLAG);
 #define cmd%0(%1,%2,%3,%4)                                                      \
             CMD%0:%1(%2, %3, %4)
 
-#define flags:flg_%0[%1]%9;%9;_CCRM(%2)_CCID(%9)%9;%9;%9<%9>             		\
-            cmd_%0(%2)<cmdMode:%1>
+#define _CCCM:tag@%0[%1](%9);CVARS(%9,%9,%2)%9;%9;%9<%9> \
+            _CCCM:tag@%0();public cmd_%0(%2)<cmdMode:%1>
 
 #define CVARS(%0,%1,%2) _CCF(%1,%0)_CCRM(%2)_CCID(cid_%1)
 
 #define ALT:%1=%2CMD:%0; \
-			_CCAV(%1)_CCF(%1,)_CCID(cid_%1)forward cmd_%1(cmdid, playerid, params[]);public cmd_%1(cmdid, playerid, params[])<>return izcmd_cmd_handled=0;public cmd_%1(cmdid, playerid, params[])<cmdMode:normal>return _izcmdp_register_alias(GetCommandID(#%0), cmdid);
+            _CCAV(%1)_CCF(%1,)_CCID(cid_%1)forward cmd_%1(cmdid, playerid, params[]);public cmd_%1(cmdid, playerid, params[])<>return izcmd_cmd_handled=0;public cmd_%1(cmdid, playerid, params[])<cmdMode:normal>return _izcmdp_register_alias(GetCommandID(#%0), cmdid);
 
 #define _CCID(%0)                                                               \
             public stock const %0=-1;
@@ -51,11 +52,11 @@ const flags:_@CMD_DEFAULT_FLAG = flags:(CMD_DEFAULT_FLAG);
 #define _@REMOVE@_
 
 #define _CCF(%1,%2)                                                             \
-            public flags:flg_%1=flags:(_@CMD_DEFAULT_FLAG _@REMOVE@_%2);stock flg@%1=_:flg_%1;
+            public flg_%1=(_@CMD_DEFAULT_FLAG _@REMOVE@_%2);stock flg@%1=flg_%1;
 
 #define _CCRM(%2)
 
-#define _CCAV(%1)                                                            	\
+#define _CCAV(%1)                                                               \
             public alt_%1=0;                                                    \
             stock alt@%1=alt_%1;
 
@@ -111,7 +112,7 @@ static izcmd_cmd_id_pid_map[MAX_COMMANDS] = {INVALID_COMMAND_ID, INVALID_COMMAND
 //Per-Command Properties
 static izcmd_cmd_funcname[MAX_COMMANDS][MAX_FUNC_NAME];
 static izcmd_cmd_paddress[MAX_COMMANDS] = {-1, -1, -1, ...};
-static flags:izcmd_cmd_flags[MAX_COMMANDS][1];
+static izcmd_cmd_flags[MAX_COMMANDS][1];
 
 //General Command Statstics
 static izcmd_cmd_total_count = 0;
@@ -531,6 +532,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	native ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, bool:updatePFT = false)
 	native EmulateCommandEx(cmdid, playerid, params[])
 	native EmulateCommand(playerid, cmdtext[])
+	native ExecuteCommand(const cmd[], command_mode, playerid, &success, params[]="")
 */
 /*******************************************************************************************************************************
 	<summary>DoesCommandExist</summary>
@@ -931,7 +933,7 @@ stock SetCommandFlags(cmdid, flags)
 {
 	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
-	izcmd_cmd_flags[cmdid][0] = flags:flags;
+	izcmd_cmd_flags[cmdid][0] = flags;
 	return 1;
 }
 
@@ -955,9 +957,9 @@ stock SetCommandFlags(cmdid, flags)
 		</code>
 	</example>
 *******************************************************************************************************************************/
-stock flags:GetCommandFlags(cmdid)
+stock GetCommandFlags(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return flags:INVALID_COMMAND_ID;
+	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	#emit CONST.alt izcmd_cmd_flags
 	#emit LOAD.S.pri cmdid
