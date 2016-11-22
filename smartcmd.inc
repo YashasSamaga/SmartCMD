@@ -1,7 +1,7 @@
 /*******************************************************************************************************************************
  SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
  This include is a feature rich version of iZCMD.
- Version: 0.3 beta (17th November)
+ Version: 0.3 beta (22nd November)
 
  GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
@@ -1127,6 +1127,7 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 		INVALID_COMMAND_ID if the command does not exist.
 		0 if the command mode does not exist.
 		1 if the command mode exists and was called.
+		2 if the command was disabled using DisableCommand.
 	</param>
 	<param name="params[]">Command parameters</param>
 	<returns>
@@ -1149,11 +1150,12 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
 		return 0;
 	}
 
+	success = 2;
 	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 	{
 		while (params[pos] == ' ') pos++;
 		
-    	izcmd_cmd_handled = 1;
+		success = izcmd_cmd_handled = 1;
 
 		#emit LOAD.S.alt params
 		#emit LOAD.S.pri pos
@@ -1181,7 +1183,6 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
         #emit STACK 8
 		#emit RETN
 	}
-	success = 1;
 	return 0;
 }
 /*******************************************************************************************************************************
