@@ -2,7 +2,7 @@
 
 //#define IZCMD_ENABLE_CASE_SENSITIVITY
 #define CMD_DEFAULT_FLAG 133
-#include <izcmd>
+#include <smartcmd>
 /*******************************************************************************************************/
 #define ITR 100000
 /*******************************************************************************************************/
@@ -25,7 +25,7 @@ CMD<ADMIN_COMMAND_FLAG>:aaaa[help](cmdid, playerid, params[])
 CMD<ADMIN_COMMAND_FLAG>:aaaa(cmdid, playerid, params[])
 {
 	flg_aaaa = flags:0;
-	//printf("[AAAA]normal cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
+	printf("[AAAA]normal cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
 	return 1;
 }
 ALT:altname = CMD:aaaa;
@@ -68,12 +68,24 @@ main()
 	new success;
 	ExecuteCommand("aaaa", help, 0, success, "");
 
-	//ReassignCommandFunction(cid_aaaa, "cmd_aaab", true);
-	//EmulateCommand(10, "/aaaa testX");
+    OnPlayerCommandText(0, "/aaaa test123");
+	ReassignCommandFunction(cid_aaaa, "cmd_aaab", false);
+	OnPlayerCommandText(0, "/aaaa test123123");
+	ReassignCommandFunction(cid_aaaa, "cmd_aaaa", false);
+	OnPlayerCommandText(0, "/aaaa test123");
+	
+	EmulateCommand(10, "/enablecmd aaaa");
+	EmulateCommand(10, "/aaaa");
+	EmulateCommand(10, "/disablecmd aaaa");
+	EmulateCommand(10, "/aaaa");
+	EmulateCommand(10, "/disablecmd aaaa");
+	EmulateCommand(10, "/enablecmd aaaa");
+	EmulateCommand(10, "/aaaa");
 	//EmulateCommandEx(cid_aaaa, 10, "this is test params");
 	//SetPointingCommandIDToSelf(cid_aaaa);
 	//---TESTING---//
-
+	return 0;
+	
 	new Float:avg;
 	for(new j = 0; j < 10; j++)
 	{
@@ -95,12 +107,12 @@ main()
 		printf("%d", b-a);
 		avg += float(b-a);
 	}
-	printf("Average: %.2f", avg/10); //1040, 930
+	printf("Average: %.2f", avg/10);
 }
 /*******************************************************************************************************/
 public OnPlayerCommandReceived(cmdid, playerid, cmdtext[])
 {
-	//printf("[OPCR] cmdid:%d playerid:%d cmdtext:%s", cmdid, playerid, cmdtext);
+	printf("[OPCR] cmdid:%d playerid:%d cmdtext:%s", cmdid, playerid, cmdtext);
 	return CMD_SUCCESS;
 }
 public OnPlayerCommandPerformed(cmdid, playerid, cmdtext[], success)
@@ -109,9 +121,36 @@ public OnPlayerCommandPerformed(cmdid, playerid, cmdtext[], success)
 	return success;
 }
 /*******************************************************************************************************/
+forward disabled(cmdid, playerid, params[]);
+public disabled(cmdid, playerid, params[])
+{
+      return printf("The command has been disabled.");
+}
+CMD:disablecmd(cmdid, playerid, params[])
+{
+      switch(ReassignCommandFunction(GetCommandID(params), "disabled"))
+      {
+             case INVALID_COMMAND_ID: return printf("The entered command does not exist.");
+             case 1: return printf("The entered command has been disabled.");
+      }
+      return CMD_SUCCESS;
+}
+CMD:enablecmd(cmdid, playerid, params[])
+{
+      new cmd_func[MAX_FUNC_NAME], cid = GetCommandID(params);
+      GetCommandFunctionName(cid, cmd_func);
+
+      switch(ReassignCommandFunction(cid, cmd_func))
+      {
+             case INVALID_COMMAND_ID: return printf("The entered command does not exist.");
+             case 1: return printf("The entered command has been enabled.");
+      }
+      return CMD_SUCCESS;
+}
+/*******************************************************************************************************/
 CMD:aaab(cmdid, playerid, params[])
 {
-	//printf("Hi from AAAB %s", params);
+	printf("Hi from AAAB %s", params);
 	return CMD_SUCCESS;
 }
 CMD:aaac(cmdid, playerid, params[])
