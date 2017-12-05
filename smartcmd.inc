@@ -102,15 +102,16 @@ static CommandProperties:izcmd_cmd_properties[MAX_COMMANDS];
 #define _UnsetCommandProperty(%0,%1)            ((izcmd_cmd_properties[%0]) &= ~(%1))
 /******************************************************************************************************************************/
 //Internal Arrays
-static izcmd_cmd_OPTC_idx_id[MAX_PUBLIC_FUNCTIONS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...}; //cmdid to be used for the given funcidx in OnPlayerCommandText
-static izcmd_cmd_idx_id_map[MAX_PUBLIC_FUNCTIONS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...}; //MUST NEVER BE CHANGED
-
-static izcmd_cmd_id_oidx_map[MAX_COMMANDS] = {-1, -1, -1, ...}; //original command function - MUST NEVER BE CHANGED
+static izcmd_cmd_OPCT_idx_id[MAX_PUBLIC_FUNCTIONS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...}; //cmdid to be used for the given funcidx in OnPlayerCommandText
 static izcmd_cmd_id_pidx_map[MAX_COMMANDS] = {-1, -1, -1, ...}; //pointing command function
 static izcmd_cmd_id_pid_map[MAX_COMMANDS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...}; //pointing cmdid
 
-//Per-Command Properties
+//Constant Arrays (must not be modified)
 static izcmd_cmd_funcname[MAX_COMMANDS][MAX_FUNC_NAME];
+static izcmd_cmd_idx_id_map[MAX_PUBLIC_FUNCTIONS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...};
+static izcmd_cmd_id_oidx_map[MAX_COMMANDS] = {-1, -1, -1, ...}; //original command function
+
+//Per-Command Properties
 static izcmd_cmd_paddress[MAX_COMMANDS] = {-1, -1, -1, ...};
 static izcmd_cmd_flags[MAX_COMMANDS][1];
 
@@ -230,7 +231,7 @@ static izcmd_Init()
 		#emit LREF.S.pri  addr
 		#emit STOR.S.pri  addr
 
-		izcmd_cmd_idx_id_map[pubfunc_idx] = izcmd_cmd_OPTC_idx_id[pubfunc_idx] = izcmd_cmd_total_count;
+		izcmd_cmd_idx_id_map[pubfunc_idx] = izcmd_cmd_OPCT_idx_id[pubfunc_idx] = izcmd_cmd_total_count;
 		izcmd_cmd_id_oidx_map[izcmd_cmd_total_count] = izcmd_cmd_id_pidx_map[izcmd_cmd_total_count] = pubfunc_idx;
 
 		_SetCommandProperty(izcmd_cmd_total_count, COMMAND_ENABLED);
@@ -470,7 +471,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 
 	if((tmp = funcidx(prefix)) != -1)
 	{
-		if((cmdid = izcmd_cmd_OPTC_idx_id[tmp]) != INVALID_COMMAND_ID && _IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+		if((cmdid = izcmd_cmd_OPCT_idx_id[tmp]) != INVALID_COMMAND_ID && _IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 		{
 			#if defined OnPlayerCommandReceived
 				if(!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
@@ -1078,30 +1079,30 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 	}
 
 	new ocmdid = izcmd_cmd_idx_id_map[idx_funcname], oaddr, caddr;
-	if(ocmdid == INVALID_COMMAND_ID)
+
+	#emit LOAD.pri offsetPFT
+	#emit LOAD.S.alt  idx_funcname
+	#emit SHL.C.alt   3
+	#emit ADD
+	#emit STOR.S.pri  oaddr
+	#emit LREF.S.pri  oaddr
+	#emit STOR.S.pri  oaddr
+
+	izcmd_cmd_id_pidx_map[cmdid] = idx_funcname;
+	izcmd_cmd_id_pid_map[cmdid] = INVALID_COMMAND_ID;
+	izcmd_cmd_paddress[cmdid] = oaddr;
+
+	if(ocmdid != INVALID_COMMAND_ID)
 	{
-		#emit LOAD.pri offsetPFT
-		#emit LOAD.S.alt  idx_funcname
-		#emit SHL.C.alt   3
-		#emit ADD
-		#emit STOR.S.pri  oaddr
-		#emit LREF.S.pri  oaddr
-		#emit STOR.S.pri  oaddr
-
-		izcmd_cmd_id_pidx_map[cmdid] = idx_funcname;
-		izcmd_cmd_id_pid_map[cmdid] = cmdid;
-		izcmd_cmd_paddress[cmdid] = oaddr;
+	    izcmd_cmd_id_pid_map[cmdid] = ocmdid;
+	    if(updateCID)
+	    {
+	        _SetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
+	        _SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+			izcmd_cmd_OPCT_idx_id[izcmd_cmd_id_oidx_map[cmdid]] = ocmdid;
+		}
 	}
-	else
-	{
-		if(updateCID)
-			izcmd_cmd_OPTC_idx_id[izcmd_cmd_id_oidx_map[cmdid]] = ocmdid;
-
-		izcmd_cmd_id_pidx_map[cmdid] = idx_funcname;
-		izcmd_cmd_id_pid_map[cmdid] = ocmdid;
-		oaddr = izcmd_cmd_paddress[cmdid] = izcmd_cmd_paddress[ocmdid];
-	}
-
+	
 	if(updatePFT)
 	{
 		#emit CONST.alt izcmd_cmd_id_oidx_map
@@ -1154,7 +1155,7 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
 	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 	{
 		while (params[pos] == ' ') pos++;
-		
+
 		success = izcmd_cmd_handled = 1;
 
 		#emit LOAD.S.alt params
@@ -1178,7 +1179,7 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
 
 		state cmdMode:normal;
 		if(izcmd_cmd_handled == 0) success = 0;
-		
+
 		#emit LOAD.S.pri pos
         #emit STACK 8
 		#emit RETN
@@ -1300,11 +1301,11 @@ stock _izcmdp_register_alias(ocmdid, acmdid)
 	_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
 	_SetCommandProperty(acmdid, COMMAND_IS_ALTERNATE);
 
-	izcmd_cmd_OPTC_idx_id[aidx] = ocmdid;
+	izcmd_cmd_OPCT_idx_id[aidx] = ocmdid;
 	izcmd_cmd_id_pidx_map[acmdid] = izcmd_cmd_id_pidx_map[ocmdid];
 	izcmd_cmd_id_pid_map[acmdid] = ocmdid;
    	oaddr = izcmd_cmd_paddress[acmdid] = izcmd_cmd_paddress[ocmdid];
-    izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
+    	izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
 
 	#emit LOAD.pri offsetPFT
 	#emit LOAD.S.alt  aidx
