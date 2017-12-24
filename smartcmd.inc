@@ -1,9 +1,9 @@
 /*******************************************************************************************************************************
- SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
- This include is a feature rich version of iZCMD.
- Version: 0.3 beta (22nd November)
+SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
+This include is a feature rich version of iZCMD.
+Version: 0.3 beta (22nd November)
 
- GitHub Link: https://github.com/YashasSamaga/SmartCMD
+GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
 #if defined _SCMD_INCLUDED
 	#endinput
@@ -12,7 +12,7 @@
 #define _SCMD_INCLUDED_V0_3_0_0_
 /******************************************************************************************************************************/
 #if !defined CMD_DEFAULT_FLAG
-    #define CMD_DEFAULT_FLAG 0
+	#define CMD_DEFAULT_FLAG 0
 #endif
 
 const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
@@ -25,16 +25,16 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 #define tag@%0\32;%1; tag@%0%1
 #define cmd_%0\32;%1( cmd_%1(
 
-#define CMD%0:%1(%2)                                                            \
+#define CMD%0:%1(%2) \
             forward _CCCM:tag@%1();CVARS(%0,%1,%2)forward cmd_%1(%2);public cmd_%1(%2)<>return izcmd_cmd_handled=0;public cmd_%1(%2)<cmdMode:normal>
 
-#define COMMAND%0:%1(%2)                                                        \
+#define COMMAND%0:%1(%2) \
             CMD%0:%1(%2)
 
-#define command%0(%1,%2,%3,%4)                                                  \
+#define command%0(%1,%2,%3,%4) \
             CMD%0:%1(%2, %3, %4)
 
-#define cmd%0(%1,%2,%3,%4)                                                      \
+#define cmd%0(%1,%2,%3,%4) \
             CMD%0:%1(%2, %3, %4)
 
 #define _CCCM:tag@%0[%1](%9);CVARS(%9,%9,%2)%9;%9;%9<%9> \
@@ -45,19 +45,19 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 #define ALT:%1=%2CMD:%0; \
             _CCAV(%1)_CCF(%1,)_CCID(cid_%1)forward cmd_%1(cmdid, playerid, params[]);public cmd_%1(cmdid, playerid, params[])<>return izcmd_cmd_handled=0;public cmd_%1(cmdid, playerid, params[])<cmdMode:normal>return _izcmdp_register_alias(GetCommandID(#%0), cmdid);
 
-#define _CCID(%0)                                                               \
+#define _CCID(%0) \
             public stock const %0=-1;
 
 #define _@CMD_DEFAULT_FLAG%9_@REMOVE@_<%1> %1
 #define _@REMOVE@_
 
-#define _CCF(%1,%2)                                                             \
+#define _CCF(%1,%2) \
             public flg_%1=(_@CMD_DEFAULT_FLAG _@REMOVE@_%2);stock flg@%1=flg_%1;
 
 #define _CCRM(%2)
 
-#define _CCAV(%1)                                                               \
-            public alt_%1=0;                                                    \
+#define _CCAV(%1) \
+            public alt_%1=0; \
             stock alt@%1=alt_%1;
 
 #define CMD_SUCCESS 1
@@ -89,7 +89,7 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 	forward OnPlayerCommandPerformed(cmdid, playerid, cmdtext[], success);
 #endif
 /******************************************************************************************************************************/
-enum CommandProperties (<<=1)
+enum CommandProperties(*=2)
 {
 	COMMAND_ENABLED = 1,
 	COMMAND_HAS_ALTERNATE,
@@ -97,22 +97,22 @@ enum CommandProperties (<<=1)
 }
 static CommandProperties:izcmd_cmd_properties[MAX_COMMANDS];
 
-#define _IsCommandPropertySet(%0,%1)            ((izcmd_cmd_properties[%0]) & (%1))
-#define _SetCommandProperty(%0,%1)             ((izcmd_cmd_properties[%0]) |= (%1))
-#define _UnsetCommandProperty(%0,%1)            ((izcmd_cmd_properties[%0]) &= ~(%1))
+#define _IsCommandPropertySet(%0,%1)	((izcmd_cmd_properties[%0]) & (%1))
+#define _SetCommandProperty(%0,%1)		((izcmd_cmd_properties[%0]) |= (%1))
+#define _UnsetCommandProperty(%0,%1)	((izcmd_cmd_properties[%0]) &= ~(%1))
 /******************************************************************************************************************************/
 //Internal Arrays
-static izcmd_cmd_OPCT_idx_id[MAX_PUBLIC_FUNCTIONS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...}; //cmdid to be used for the given funcidx in OnPlayerCommandText
-static izcmd_cmd_id_pidx_map[MAX_COMMANDS] = {-1, -1, -1, ...}; //pointing command function
-static izcmd_cmd_id_pid_map[MAX_COMMANDS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...}; //pointing cmdid
+static izcmd_cmd_OPCT_idx_id[MAX_PUBLIC_FUNCTIONS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... }; //cmdid to be used for the given funcidx in OnPlayerCommandText
+static izcmd_cmd_id_pidx_map[MAX_COMMANDS] = { -1, -1, -1, ... }; //pointing command function
+static izcmd_cmd_id_pid_map[MAX_COMMANDS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... }; //pointing cmdid
 
 //Constant Arrays (must not be modified)
 static izcmd_cmd_funcname[MAX_COMMANDS][MAX_FUNC_NAME];
-static izcmd_cmd_idx_id_map[MAX_PUBLIC_FUNCTIONS] = {INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ...};
-static izcmd_cmd_id_oidx_map[MAX_COMMANDS] = {-1, -1, -1, ...}; //original command function
+static izcmd_cmd_idx_id_map[MAX_PUBLIC_FUNCTIONS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... };
+static izcmd_cmd_id_oidx_map[MAX_COMMANDS] = { -1, -1, -1, ... }; //original command function
 
 //Per-Command Properties
-static izcmd_cmd_paddress[MAX_COMMANDS] = {-1, -1, -1, ...};
+static izcmd_cmd_paddress[MAX_COMMANDS] = { -1, -1, -1, ... };
 static izcmd_cmd_flags[MAX_COMMANDS][1];
 
 //General Command Statstics
@@ -125,8 +125,8 @@ static offsetDAT, offsetPFT, offsetNFT, offsetPVT, offsetTAGS, number_of_publics
 //Addtitional Support Variables (used internally)
 new izcmd_cmd_handled = 1;
 /******************************************************************************************************************************/
-static stock _dummy() <> return 0;
-static stock _dummy() <cmdMode:normal> return 0;
+static stock _dummy() < > return 0;
+static stock _dummy() < cmdMode:normal > return 0;
 
 static LoadString(addr, str[])
 {
@@ -139,13 +139,13 @@ static LoadString(addr, str[])
 		str[j++] = chr = (chr & 0xFF);
 
 		#emit INC.S addr
-	}while(chr != EOS);
+	} while (chr != EOS);
 }
 static izcmd_Init()
 {
 	new addr, tmp, cmd_name[MAX_FUNC_NAME] = "cmd_", bool:crash = false;
 
-    state cmdMode:normal;
+	state cmdMode:normal;
 
 	#emit LCTRL 1
 	#emit NEG
@@ -179,7 +179,7 @@ static izcmd_Init()
 	#emit CONST.alt 44
 	#emit SUB
 	#emit STOR.pri offsetPVT
-
+		
 	#emit LOAD.pri offsetDAT
 	#emit ADD.C 48
 	#emit STOR.S.pri addr
@@ -193,9 +193,9 @@ static izcmd_Init()
 	number_of_publics = ((offsetNFT - offsetPFT) >>> 3);
 	number_of_pubvars = ((offsetTAGS - offsetPVT) >>> 3);
 
-	for(new pubfunc_idx = 0; pubfunc_idx < number_of_publics; pubfunc_idx++)
+	for (new pubfunc_idx = 0; pubfunc_idx < number_of_publics; pubfunc_idx++)
 	{
-		if(pubfunc_idx == MAX_PUBLIC_FUNCTIONS)
+		if (pubfunc_idx == MAX_PUBLIC_FUNCTIONS)
 		{
 			printf("[ERROR] MAX_PUBLIC_FUNCTIONS (Current Value: %d) must be set to %d or higher.", MAX_PUBLIC_FUNCTIONS, number_of_publics);
 			print("[WARNING] All commands may not work as expected.");
@@ -213,7 +213,7 @@ static izcmd_Init()
 		#emit LREF.S.pri addr
 		#emit STOR.S.pri tmp
 
-		if(tmp != ((('_')<<24) | (('d')<<16) | (('m')<<8) | ('c')))	continue; 	{}
+		if (tmp != ((('_') << 24) | (('d') << 16) | (('m') << 8) | ('c')))	continue; {}
 
 		strcat(izcmd_cmd_funcname[izcmd_cmd_total_count], "cmd_", MAX_FUNC_NAME);
 
@@ -240,7 +240,7 @@ static izcmd_Init()
 		izcmd_cmd_total_count++;
 		izcmd_cmd_enabled_count++;
 
-		if(izcmd_cmd_total_count == MAX_COMMANDS)
+		if (izcmd_cmd_total_count == MAX_COMMANDS)
 		{
 			printf("[ERROR] MAX_COMMANDS (Current Value: %d) must be set to larger number.", izcmd_cmd_total_count);
 			print("[WARNING] All commands may not work as expected.");
@@ -248,7 +248,7 @@ static izcmd_Init()
 			break;
 		}
 	}
-	for(new pubvar_idx = 0; pubvar_idx < number_of_pubvars; pubvar_idx++)
+	for (new pubvar_idx = 0; pubvar_idx < number_of_pubvars; pubvar_idx++)
 	{
 		addr = (pubvar_idx << 3) + offsetPVT + 4;
 
@@ -260,17 +260,17 @@ static izcmd_Init()
 		#emit LREF.S.pri addr
 		#emit STOR.S.pri tmp
 
-		if(tmp == ((('_')<<24) | (('g')<<16) | (('l')<<8) | ('f')))
+		if (tmp == ((('_') << 24) | (('g') << 16) | (('l') << 8) | ('f')))
 		{
 			#emit LOAD.S.pri addr
 			#emit ADD.C 4
 			#emit STOR.S.pri addr
 
-			LoadString(addr,cmd_name[4]);
-
+			LoadString(addr, cmd_name[4]);
+			
 			new cmd_idx = funcidx(cmd_name);
-			if(cmd_idx == -1) break;
-			if(cmd_idx >= MAX_PUBLIC_FUNCTIONS) break; {}
+			if (cmd_idx == -1) break;
+			if (cmd_idx >= MAX_PUBLIC_FUNCTIONS) break; {}
 
 			#emit LOAD.pri offsetPVT
 			#emit LOAD.S.alt  pubvar_idx
@@ -299,17 +299,17 @@ static izcmd_Init()
 			#emit LOAD.S.pri n
 			#emit STOR.I
 		}
-		else if(tmp == ((('_')<<24) + (('t')<<16) + (('l')<<8) + ('a')))
+		else if (tmp == ((('_') << 24) + (('t') << 16) + (('l') << 8) + ('a')))
 		{
 			#emit LOAD.S.pri addr
 			#emit ADD.C 4
 			#emit STOR.S.pri addr
 
-			LoadString(addr,cmd_name[4]);
+			LoadString(addr, cmd_name[4]);
 
 			new cmd_idx = funcidx(cmd_name);
-			if(cmd_idx == -1) break;
-			if(cmd_idx >= MAX_PUBLIC_FUNCTIONS) break;
+			if (cmd_idx == -1) break;
+			if (cmd_idx >= MAX_PUBLIC_FUNCTIONS) break;
 
 			new cmdid = izcmd_cmd_idx_id_map[cmd_idx];
 
@@ -326,17 +326,17 @@ static izcmd_Init()
 			#emit LIDX
 			#emit SCTRL      6
 		}
-		else if(tmp == ((('_')<<24) + (('d')<<16) + (('i')<<8) + ('c')))
+		else if (tmp == ((('_') << 24) + (('d') << 16) + (('i') << 8) + ('c')))
 		{
 			#emit LOAD.S.pri addr
 			#emit ADD.C 4
 			#emit STOR.S.pri addr
 
-			LoadString(addr,cmd_name[4]);
+			LoadString(addr, cmd_name[4]);
 
 			new cmd_idx = funcidx(cmd_name);
-			if(cmd_idx == -1) break;
-			if(cmd_idx >= MAX_PUBLIC_FUNCTIONS) break; {}
+			if (cmd_idx == -1) break;
+			if (cmd_idx >= MAX_PUBLIC_FUNCTIONS) break; {}
 
 			#emit LOAD.pri offsetPVT
 			#emit LOAD.S.alt  pubvar_idx
@@ -353,7 +353,7 @@ static izcmd_Init()
 			#emit STOR.I
 		}
 	}
-	if(crash)
+	if (crash)
 	{
 		new x = MAX_COMMANDS;
 		return izcmd_cmd_paddress[x];
@@ -401,16 +401,16 @@ static izcmd_Init()
 	#define OnGameModeInit izcmd_OnGameModeInit
 
 	#if defined izcmd_OnGameModeInit
-	forward izcmd_OnGameModeInit();
+		forward izcmd_OnGameModeInit();
 	#endif
 #endif
 /******************************************************************************************************************************/
 public OnPlayerCommandText(playerid, cmdtext[])
 {
-	static prefix[4] = {'c', 'm', 'd', '_'}, funcname[MAX_CLIENT_MSG_LENGTH - 4];
+	static prefix[4] = { 'c', 'm', 'd', '_' }, funcname[MAX_CLIENT_MSG_LENGTH - 4];
 	new cmdid, tmp, addr, faddr;
 
-	state cmdMode:normal;
+	state cmdMode : normal;
 
 	#emit CONST.pri funcname
 	#emit STOR.S.pri faddr
@@ -422,28 +422,26 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	#emit LOAD.I
 	#emit STOR.S.pri tmp
 
-	while(tmp > ' ')
+	while (tmp > ' ')
 	{
-	    #if !defined IZCMD_ENABLE_CASE_SENSITIVITY
-		if('A' <= tmp <= 'Z')
+		#if !defined IZCMD_ENABLE_CASE_SENSITIVITY
+		if ('A' <= tmp <= 'Z')
 		{
-		    #emit LOAD.S.pri tmp
-		    #emit CONST.alt 32
-		    #emit OR
+			#emit LOAD.S.pri tmp
+			#emit CONST.alt 32
+			#emit OR
 
-		    #emit LOAD.S.alt faddr
-		    #emit STOR.I
+			#emit LOAD.S.alt faddr
+			#emit STOR.I
 		}
 		else
 		#endif
-
 		{
 			#emit LOAD.S.alt faddr
-		    #emit LOAD.S.pri tmp
-		    #emit STOR.I
-
+			#emit LOAD.S.pri tmp
+			#emit STOR.I
 		}
-        #emit LOAD.S.pri faddr
+		#emit LOAD.S.pri faddr
 		#emit ADD.C 4
 		#emit STOR.S.pri faddr
 
@@ -461,7 +459,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 
 	while (tmp == ' ')
 	{
-	    #emit LOAD.S.pri addr
+		#emit LOAD.S.pri addr
 		#emit ADD.C 4
 		#emit STOR.S.pri addr
 
@@ -469,12 +467,12 @@ public OnPlayerCommandText(playerid, cmdtext[])
 		#emit STOR.S.pri tmp
 	}
 
-	if((tmp = funcidx(prefix)) != -1)
+	if ((tmp = funcidx(prefix)) != -1)
 	{
-		if((cmdid = izcmd_cmd_OPCT_idx_id[tmp]) != INVALID_COMMAND_ID && _IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+		if ((cmdid = izcmd_cmd_OPCT_idx_id[tmp]) != INVALID_COMMAND_ID && _IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 		{
 			#if defined OnPlayerCommandReceived
-				if(!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
+				if (!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
 			#endif
 
 			#emit PUSH.S addr
@@ -501,7 +499,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 		}
 	}
 	#if defined OnPlayerCommandReceived
-		if(!OnPlayerCommandReceived(INVALID_COMMAND_ID, playerid, cmdtext)) return 1;
+		if (!OnPlayerCommandReceived(INVALID_COMMAND_ID, playerid, cmdtext)) return 1;
 	#endif
 
 	#if defined OnPlayerCommandPerformed
@@ -583,7 +581,7 @@ stock GetCommandID(const cmd[])
 
 	new idx = funcidx(funcname);
 
-	if(idx == -1) return INVALID_COMMAND_ID;
+	if (idx == -1) return INVALID_COMMAND_ID;
 	return izcmd_cmd_idx_id_map[idx];
 }
 
@@ -605,7 +603,7 @@ stock GetCommandID(const cmd[])
 *******************************************************************************************************************************/
 stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return 0;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return 0;
 
 	cmd[0] = 0;
 	strcat(cmd, izcmd_cmd_funcname[cmdid][4], len);
@@ -640,15 +638,15 @@ stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 *******************************************************************************************************************************/
 stock GetAlternateCommands(cmdid, cmdidlist[])
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	new count = 0;
-	if(_IsCommandPropertySet(cmdid, COMMAND_HAS_ALTERNATE))
+	if (_IsCommandPropertySet(cmdid, COMMAND_HAS_ALTERNATE))
 	{
-		for(new id = 0; id < izcmd_cmd_total_count; id++)
+		for (new id = 0; id < izcmd_cmd_total_count; id++)
 		{
-			if(id == cmdid) continue;
-			if(izcmd_cmd_id_pid_map[id] == cmdid)
+			if (id == cmdid) continue;
+			if (izcmd_cmd_id_pid_map[id] == cmdid)
 				cmdidlist[count++] = id;
 		}
 	}
@@ -682,7 +680,7 @@ stock GetAlternateCommands(cmdid, cmdidlist[])
 *******************************************************************************************************************************/
 stock IsCommandAlternate(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	return !!(_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE));
 }
 
@@ -705,7 +703,7 @@ stock IsCommandAlternate(cmdid)
 *******************************************************************************************************************************/
 stock GetCommandFunctionID(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	return izcmd_cmd_id_oidx_map[cmdid];
 }
 
@@ -729,7 +727,7 @@ stock GetCommandFunctionID(cmdid)
 *******************************************************************************************************************************/
 stock GetPointingCommandFunctionID(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	return izcmd_cmd_id_pidx_map[cmdid];
 }
 
@@ -759,7 +757,7 @@ stock GetPointingCommandFunctionID(cmdid)
 *******************************************************************************************************************************/
 stock GetPointingCommandID(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	return izcmd_cmd_id_pid_map[cmdid];
 }
 
@@ -781,10 +779,10 @@ stock GetPointingCommandID(cmdid)
 *******************************************************************************************************************************/
 stock GetCommandFunctionName(cmdid, dest[], len = sizeof(dest))
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	dest[0] = 0;
 	strcat(dest, "cmd_", len);
-	GetCommandName(cmdid, dest[4], len-4);
+	GetCommandName(cmdid, dest[4], len - 4);
 	return 1;
 }
 
@@ -856,8 +854,8 @@ stock GetTotalCommandCount()
 *******************************************************************************************************************************/
 stock EnableCommand(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED)) return 0;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (_IsCommandPropertySet(cmdid, COMMAND_ENABLED)) return 0;
 
 	_SetCommandProperty(cmdid, COMMAND_ENABLED);
 
@@ -882,8 +880,8 @@ stock EnableCommand(cmdid)
 *******************************************************************************************************************************/
 stock DisableCommand(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	if(!_IsCommandPropertySet(cmdid, COMMAND_ENABLED)) return 0;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!_IsCommandPropertySet(cmdid, COMMAND_ENABLED)) return 0;
 
 	_UnsetCommandProperty(cmdid, COMMAND_ENABLED);
 
@@ -906,7 +904,7 @@ stock DisableCommand(cmdid)
 *******************************************************************************************************************************/
 stock IsCommandEnabled(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	return !!(_IsCommandPropertySet(cmdid, COMMAND_ENABLED));
 }
 
@@ -932,7 +930,7 @@ stock IsCommandEnabled(cmdid)
 *******************************************************************************************************************************/
 stock SetCommandFlags(cmdid, flags)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	izcmd_cmd_flags[cmdid][0] = flags;
 	return 1;
@@ -960,7 +958,7 @@ stock SetCommandFlags(cmdid, flags)
 *******************************************************************************************************************************/
 stock GetCommandFlags(cmdid)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	#emit CONST.alt izcmd_cmd_flags
 	#emit LOAD.S.pri cmdid
@@ -983,34 +981,34 @@ stock GetCommandFlags(cmdid)
 	</remarks>
 	<example>
 		<code>
-            SetPointingCommandIDToSelf(cid_spec);
+			SetPointingCommandIDToSelf(cid_spec);
 		</code>
 	</example>
 *******************************************************************************************************************************/
 stock SetPointingCommandIDToSelf(cmdid)
 {
-    if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
-	if(_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
+	if (_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
 	{
 		new ocmdid = izcmd_cmd_id_pidx_map[cmdid];
 
 		_UnsetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
 		_UnsetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
 
-		for(new id = 0; id < izcmd_cmd_total_count; id++)
+		for (new id = 0; id < izcmd_cmd_total_count; id++)
 		{
-			if(id == ocmdid) continue;
-			if(id == cmdid) continue;
+			if (id == ocmdid) continue;
+			if (id == cmdid) continue;
 
-			if(izcmd_cmd_id_pidx_map[id] == cmdid)
+			if (izcmd_cmd_id_pidx_map[id] == cmdid)
 			{
 				_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
 				break;
 			}
 		}
 	}
-    izcmd_cmd_id_pid_map[cmdid] = cmdid;
+	izcmd_cmd_id_pid_map[cmdid] = cmdid;
 	return 1;
 }
 
@@ -1020,15 +1018,15 @@ stock SetPointingCommandIDToSelf(cmdid)
 	<param name="cmdid">command id</param>
 	<param name="funcname">name of the function to which the command has to be assigned to</param>
 	<param name="updateCID">if the function name is a command function, this option allows you to allow the comamnd (whose id is cmdid)
-							to	pretend (alternate command) like the command whose function name was passed. (false by default)</param>
+		to	pretend (alternate command) like the command whose function name was passed. (false by default)</param>
 	<param name="updatePFT">Updates the public function table which makes CallLocalFunction/CallRemoteFunction execute the function
-							whose name is funcname when asked to call the command (false by default)</param>
+		whose name is funcname when asked to call the command (false by default)</param>
 	<returns>
 		INVALID_COMMAND_ID if the command id passed is invalid.
 		1 on success and 0 on failure.
 	</returns>
 	<remarks>
-	    Reassigning a command will indirectly have all its alternate commands reassigned
+		Reassigning a command will indirectly have all its alternate commands reassigned
 	</remarks>
 	<example>
 		<code>
@@ -1036,41 +1034,41 @@ stock SetPointingCommandIDToSelf(cmdid)
 			forward disabled(cmdid, playerid, params[])
 			public disabled(cmdid, playerid, params[])
 			{
-				  return SendClientMessage(playerid, RED, "The command has been disabled.");
+				return SendClientMessage(playerid, RED, "The command has been disabled.");
 			}
 			CMD:disablecmd(cmdid, playerid, params[])
 			{
-				  switch(ReassignCommandFunction(GetCommandID(params), "disabled"))
-				  {
-						 case -1: return SendClientMessage(playerid, RED, "The entered command does not exist.");
-						 case 0: return SendClientMessage(playerid, RED, "The entered command is already enabled.");
-						 case 1: return SendClientMessage(playerid, RED, "The entered command has been enabled.");
-				  }
-				  return CMD_SUCCESS;
+				switch(ReassignCommandFunction(GetCommandID(params), "disabled"))
+				{
+					case -1: return SendClientMessage(playerid, RED, "The entered command does not exist.");
+					case 0: return SendClientMessage(playerid, RED, "The entered command is already enabled.");
+					case 1: return SendClientMessage(playerid, RED, "The entered command has been enabled.");
+				}
+				return CMD_SUCCESS;
 			}
 		</code>
 	</example>
 *******************************************************************************************************************************/
 stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, bool:updatePFT = false)
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	new idx_funcname = funcidx(funcname);
-	if(idx_funcname == -1) return 0;
+	if (idx_funcname == -1) return 0;
 
-	if(_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
+	if (_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
 	{
 		new ocmdid = izcmd_cmd_id_pidx_map[cmdid];
 
 		_UnsetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
 		_UnsetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
 
-		for(new id = 0; id < izcmd_cmd_total_count; id++)
+		for (new id = 0; id < izcmd_cmd_total_count; id++)
 		{
-			if(id == ocmdid) continue;
-			if(id == cmdid) continue;
+			if (id == ocmdid) continue;
+			if (id == cmdid) continue;
 
-			if(izcmd_cmd_id_pidx_map[id] == cmdid)
+			if (izcmd_cmd_id_pidx_map[id] == cmdid)
 			{
 				_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
 				break;
@@ -1092,18 +1090,18 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 	izcmd_cmd_id_pid_map[cmdid] = INVALID_COMMAND_ID;
 	izcmd_cmd_paddress[cmdid] = oaddr;
 
-	if(ocmdid != INVALID_COMMAND_ID)
+	if (ocmdid != INVALID_COMMAND_ID)
 	{
-	    izcmd_cmd_id_pid_map[cmdid] = ocmdid;
-	    if(updateCID)
-	    {
-	        _SetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
-	        _SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+		izcmd_cmd_id_pid_map[cmdid] = ocmdid;
+		if (updateCID)
+		{
+			_SetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
+			_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
 			izcmd_cmd_OPCT_idx_id[izcmd_cmd_id_oidx_map[cmdid]] = ocmdid;
 		}
 	}
-	
-	if(updatePFT)
+
+	if (updatePFT)
 	{
 		#emit CONST.alt izcmd_cmd_id_oidx_map
 		#emit LOAD.S.pri cmdid
@@ -1142,17 +1140,17 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 *******************************************************************************************************************************/
 #define ExecuteCommand(%0,%1,%2,%3,%4) state cmdMode:%1;_ExecuteCommand(%0,%2,%3,%4)
 
-stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
+stock _ExecuteCommand(const cmd[], playerid, &success, params[] = "")
 {
 	new cmdid = GetCommandID(cmd), pos;
-	if(!(0 <= cmdid < izcmd_cmd_total_count))
+	if (!(0 <= cmdid < izcmd_cmd_total_count))
 	{
-	    success = INVALID_COMMAND_ID;
+		success = INVALID_COMMAND_ID;
 		return 0;
 	}
 
 	success = 2;
-	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+	if (_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 	{
 		while (params[pos] == ' ') pos++;
 
@@ -1178,10 +1176,10 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
 		#emit STOR.S.pri pos
 
 		state cmdMode:normal;
-		if(izcmd_cmd_handled == 0) success = 0;
+		if (izcmd_cmd_handled == 0) success = 0;
 
 		#emit LOAD.S.pri pos
-        #emit STACK 8
+		#emit STACK 8
 		#emit RETN
 	}
 	return 0;
@@ -1206,7 +1204,7 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[]="")
 *******************************************************************************************************************************/
 stock EmulateCommand(playerid, cmdtext[])
 {
-	if(OnPlayerCommandText(playerid, cmdtext))
+	if (OnPlayerCommandText(playerid, cmdtext))
 		return 1;
 	else
 	{
@@ -1236,26 +1234,26 @@ stock EmulateCommand(playerid, cmdtext[])
 *******************************************************************************************************************************/
 stock EmulateCommandEx(cmdid, playerid, params[])
 {
-	if(!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	new cmdtext[MAX_CLIENT_MSG_LENGTH], pos, retval;
 	cmdtext[0] = '/';
 
 	GetCommandName(cmdid, cmdtext[1], MAX_CLIENT_MSG_LENGTH);
 
-	if(!isnull(params))
+	if (!isnull(params))
 	{
 		strcat(cmdtext, " ");
 		strcat(cmdtext, params);
 		while (params[pos] == ' ') pos++;
 	}
 
-	state cmdMode:normal;
+	state cmdMode : normal;
 
-	if(_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+	if (_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
 	{
 		#if defined OnPlayerCommandReceived
-			if(!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
+		if (!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
 		#endif
 
 		#emit LOAD.S.alt params
@@ -1278,19 +1276,19 @@ stock EmulateCommandEx(cmdid, playerid, params[])
 		#emit STOR.S.pri retval
 
 		#if defined OnPlayerCommandPerformed
-			return OnPlayerCommandPerformed(cmdid, playerid, cmdtext, retval);
+		return OnPlayerCommandPerformed(cmdid, playerid, cmdtext, retval);
 		#else
-			return retval;
+		return retval;
 		#endif
 	}
 	#if defined OnPlayerCommandReceived
-		if(!OnPlayerCommandReceived(INVALID_COMMAND_ID, playerid, cmdtext)) return 1;
+	if (!OnPlayerCommandReceived(INVALID_COMMAND_ID, playerid, cmdtext)) return 1;
 	#endif
 
 	#if defined OnPlayerCommandPerformed
-		return OnPlayerCommandPerformed(INVALID_COMMAND_ID, playerid, cmdtext, 0);
+	return OnPlayerCommandPerformed(INVALID_COMMAND_ID, playerid, cmdtext, 0);
 	#else
-		return 0;
+	return 0;
 	#endif
 }
 /******************************************************************************************************************************/
@@ -1304,8 +1302,8 @@ stock _izcmdp_register_alias(ocmdid, acmdid)
 	izcmd_cmd_OPCT_idx_id[aidx] = ocmdid;
 	izcmd_cmd_id_pidx_map[acmdid] = izcmd_cmd_id_pidx_map[ocmdid];
 	izcmd_cmd_id_pid_map[acmdid] = ocmdid;
-   	oaddr = izcmd_cmd_paddress[acmdid] = izcmd_cmd_paddress[ocmdid];
-    	izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
+	oaddr = izcmd_cmd_paddress[acmdid] = izcmd_cmd_paddress[ocmdid];
+	izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
 
 	#emit LOAD.pri offsetPFT
 	#emit LOAD.S.alt  aidx
