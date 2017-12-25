@@ -2,15 +2,17 @@
 SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
 This include is a feature rich version of iZCMD.
 
-Version: 0.3.2 beta (25th December 2017)
+Version: 0.3.3 beta (25th December 2017)
 
 GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
-#if defined _SCMD_INCLUDED
+#if defined SCMD_INCLUDED
 	#endinput
 #endif
-#define _SCMD_INCLUDED
-#define _SCMD_INCLUDED_V0_3_0_0_
+#define SCMD_INCLUDED
+#define SCMD_INCLUDED_VMAJOR 0
+#define SCMD_INCLUDED_VMINOR 3
+#define SCMD_INCLUDED_VPATCH 3
 /******************************************************************************************************************************/
 #if !defined CMD_DEFAULT_FLAG
 	#define CMD_DEFAULT_FLAG 0
@@ -40,8 +42,15 @@ GitHub Link: https://github.com/YashasSamaga/SmartCMD
 #endif
 /******************************************************************************************************************************/
 /* preprocessor directives to handle command declaration syntax */
+/*
+	CCCM = create command mode
+	CVARS = create command variables
+		CCF = create command flags
+		CCRM = remove
+		CCID = create command id
+*/
 
-const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
+const __smartcmd_default_flag = (CMD_DEFAULT_FLAG);
 
 #define cid_%0\32;%1; cid_%0%1
 #define flg_%0\32;%1; flg_%0%1
@@ -52,7 +61,7 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 #define cmd_%0\32;%1( cmd_%1(
 
 #define CMD%0:%1(%2) \
-            forward _CCCM:tag@%1();CVARS(%0,%1,%2)forward cmd_%1(%2);public cmd_%1(%2)<>return izcmd_cmd_handled=0;public cmd_%1(%2)<cmdMode:normal>
+            forward __smartcmd_CCCM:tag@%1();__smartcmd_CVARS(%0,%1,%2)forward cmd_%1(%2);public cmd_%1(%2)<>return __smartcmd_cmd_handled=0;public cmd_%1(%2)<cmdMode:normal>
 
 #define COMMAND%0:%1(%2) \
             CMD%0:%1(%2)
@@ -63,26 +72,26 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 #define cmd%0(%1,%2,%3,%4) \
             CMD%0:%1(%2, %3, %4)
 
-#define _CCCM:tag@%0[%1](%9);CVARS(%9,%9,%2)%9;%9;%9<%9> \
-            _CCCM:tag@%0();public cmd_%0(%2)<cmdMode:%1>
+#define __smartcmd_CCCM:tag@%0[%1](%9);__smartcmd_CVARS(%9,%9,%2)%9;%9;%9<%9> \
+            __smartcmd_CCCM:tag@%0();public cmd_%0(%2)<cmdMode:%1>
 
-#define CVARS(%0,%1,%2) _CCF(%1,%0)_CCRM(%2)_CCID(cid_%1)
+#define __smartcmd_CVARS(%0,%1,%2) __smartcmd_CCF(%1,%0)__smartcmd_CCRM(%2)__smartcmd_CCID(cid_%1)
 
 #define ALT:%1=%2CMD:%0; \
-            _CCAV(%1)_CCF(%1,)_CCID(cid_%1)forward cmd_%1(cmdid, playerid, params[]);public cmd_%1(cmdid, playerid, params[])<>return izcmd_cmd_handled=0;public cmd_%1(cmdid, playerid, params[])<cmdMode:normal>return _izcmdp_register_alias(GetCommandID(#%0), cmdid);
+            __smartcmd_CCAV(%1)__smartcmd_CCF(%1,)__smartcmd_CCID(cid_%1)forward cmd_%1(cmdid, playerid, params[]);public cmd_%1(cmdid, playerid, params[])<>return __smartcmd_cmd_handled=0;public cmd_%1(cmdid, playerid, params[])<cmdMode:normal>return __smartcmd_register_alias(GetCommandID(#%0), cmdid);
 
-#define _CCID(%0) \
+#define __smartcmd_CCID(%0) \
             public stock const %0=-1;
 
-#define _@CMD_DEFAULT_FLAG%9_@REMOVE@_<%1> %1
-#define _@REMOVE@_
+#define __smartcmd_default_flag%9__smartcmd_REMOVE<%1> %1
+#define __smartcmd_REMOVE
 
-#define _CCF(%1,%2) \
-            public flg_%1=(_@CMD_DEFAULT_FLAG _@REMOVE@_%2);stock flg@%1=flg_%1;
+#define __smartcmd_CCF(%1,%2) \
+            public flg_%1=(__smartcmd_default_flag __smartcmd_REMOVE%2);stock flg@%1=flg_%1;
 
-#define _CCRM(%2)
+#define __smartcmd_CCRM(%2)
 
-#define _CCAV(%1) \
+#define __smartcmd_CCAV(%1) \
             public alt_%1=0; \
             stock alt@%1=alt_%1;
 /******************************************************************************************************************************/
@@ -93,46 +102,46 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 	forward OnPlayerCommandPerformed(cmdid, playerid, cmdtext[], success);
 #endif
 /******************************************************************************************************************************/
-enum CommandProperties(*=2)
+enum __smartcmd_CommandProperties(*=2)
 {
-	COMMAND_ENABLED = 1,
-	COMMAND_HAS_ALTERNATE,
-	COMMAND_IS_ALTERNATE
+	__smartcmd_CMD_ENABLED = 1,
+	__smartcmd_CMD_HAS_ALTERNATE,
+	__smartcmd_CMD_IS_ALTERNATE
 }
-static CommandProperties:izcmd_cmd_properties[MAX_COMMANDS];
+static __smartcmd_CommandProperties:izcmd_cmd_properties[MAX_COMMANDS];
 
-#define _IsCommandPropertySet(%0,%1)	((izcmd_cmd_properties[%0]) & (%1))
-#define _SetCommandProperty(%0,%1)		((izcmd_cmd_properties[%0]) |= (%1))
-#define _UnsetCommandProperty(%0,%1)	((izcmd_cmd_properties[%0]) &= ~(%1))
+#define __IsCommandPropertySet(%0,%1)	((izcmd_cmd_properties[%0]) & (%1))
+#define __SetCommandProperty(%0,%1)		((izcmd_cmd_properties[%0]) |= (%1))
+#define __UnsetCommandProperty(%0,%1)	((izcmd_cmd_properties[%0]) &= ~(%1))
 /******************************************************************************************************************************/
 //Internal Arrays
-static izcmd_cmd_OPCT_idx_id[MAX_PUBLIC_FUNCTIONS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... }; //cmdid to be used for the given funcidx in OnPlayerCommandText
-static izcmd_cmd_id_pidx_map[MAX_COMMANDS] = { -1, -1, -1, ... }; //pointing command function
-static izcmd_cmd_id_pid_map[MAX_COMMANDS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... }; //pointing cmdid
+static __smartcmd_fidx_pcid_map[MAX_PUBLIC_FUNCTIONS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... }; //cmdid to be used for the given funcidx in OnPlayerCommandText
+static __smartcmd_cid_pfidx_map[MAX_COMMANDS] = { -1, -1, -1, ... }; //pointing command function
+static __smartcmd_cid_pid_map[MAX_COMMANDS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... }; //pointing cmdid
 
 //Constant Arrays (must not be modified)
-static izcmd_cmd_funcname[MAX_COMMANDS][MAX_FUNC_NAME];
-static izcmd_cmd_idx_id_map[MAX_PUBLIC_FUNCTIONS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... };
-static izcmd_cmd_id_oidx_map[MAX_COMMANDS] = { -1, -1, -1, ... }; //original command function
+static __const_smartcmd_funcname[MAX_COMMANDS][MAX_FUNC_NAME];
+static __const_smartcmd_fidx_ocid_map[MAX_PUBLIC_FUNCTIONS] = { INVALID_COMMAND_ID, INVALID_COMMAND_ID, INVALID_COMMAND_ID, ... };
+static __const_smartcmd_cid_ofidx_map[MAX_COMMANDS] = { -1, -1, -1, ... }; //original command function
 
 //Per-Command Properties
-static izcmd_cmd_paddress[MAX_COMMANDS] = { -1, -1, -1, ... };
-static izcmd_cmd_flags[MAX_COMMANDS][1];
+static __smartcmd_pfaddress[MAX_COMMANDS] = { -1, -1, -1, ... };
+static __smartcmd_cflags[MAX_COMMANDS][1];
 
 //General Command Statstics
-static izcmd_cmd_total_count = 0;
-static izcmd_cmd_enabled_count = 0;
+static __smartcmd_cmd_total_count = 0;
+static __smartcmd_cmd_enabled_count = 0;
 
 //Internal Variables
-static offsetDAT, offsetPFT, offsetNFT, offsetPVT, offsetTAGS, number_of_publics, number_of_pubvars;
+static __smartcmd_offsetDAT, __smartcmd_offsetPFT, __smartcmd_offsetNFT, __smartcmd_offsetPVT, __smartcmd_offsetTAGS, __smartcmd_number_of_publics, __smartcmd_number_of_pubvars;
 
 //Addtitional Support Variables (used internally)
-new izcmd_cmd_handled = 1;
+new __smartcmd_cmd_handled = 1;
 /******************************************************************************************************************************/
-static stock _dummy() < > return 0;
-static stock _dummy() < cmdMode:normal > return 0;
+static stock __smartcmd_dummy() < > return 0;
+static stock __smartcmd_dummy() < cmdMode:normal > return 0;
 
-static LoadString(addr, str[])
+static __smartcmd_LoadString(addr, str[])
 {
 	new chr, j;
 	do
@@ -145,7 +154,7 @@ static LoadString(addr, str[])
 		#emit INC.S addr
 	} while (chr != EOS);
 }
-static izcmd_Init()
+static __smartcmd_init()
 {
 	new addr, tmp, cmd_name[MAX_FUNC_NAME] = "cmd_", bool:crash = false;
 
@@ -153,7 +162,7 @@ static izcmd_Init()
 
 	#emit LCTRL 1
 	#emit NEG
-	#emit STOR.pri offsetDAT
+	#emit STOR.pri __smartcmd_offsetDAT
 
 	#emit ADD.C 32
 	#emit STOR.S.pri addr
@@ -162,9 +171,9 @@ static izcmd_Init()
 	#emit ADD
 	#emit CONST.alt 32
 	#emit SUB
-	#emit STOR.pri offsetPFT
+	#emit STOR.pri __smartcmd_offsetPFT
 
-	#emit LOAD.pri offsetDAT
+	#emit LOAD.pri __smartcmd_offsetDAT
 	#emit ADD.C 36
 	#emit STOR.S.pri addr
 	#emit LREF.S.pri addr
@@ -172,9 +181,9 @@ static izcmd_Init()
 	#emit ADD
 	#emit CONST.alt 36
 	#emit SUB
-	#emit STOR.pri offsetNFT
+	#emit STOR.pri __smartcmd_offsetNFT
 
-	#emit LOAD.pri offsetDAT
+	#emit LOAD.pri __smartcmd_offsetDAT
 	#emit ADD.C 44
 	#emit STOR.S.pri addr
 	#emit LREF.S.pri addr
@@ -182,9 +191,9 @@ static izcmd_Init()
 	#emit ADD
 	#emit CONST.alt 44
 	#emit SUB
-	#emit STOR.pri offsetPVT
+	#emit STOR.pri __smartcmd_offsetPVT
 		
-	#emit LOAD.pri offsetDAT
+	#emit LOAD.pri __smartcmd_offsetDAT
 	#emit ADD.C 48
 	#emit STOR.S.pri addr
 	#emit LREF.S.pri addr
@@ -192,25 +201,25 @@ static izcmd_Init()
 	#emit ADD
 	#emit CONST.alt 48
 	#emit SUB
-	#emit STOR.pri offsetTAGS
+	#emit STOR.pri __smartcmd_offsetTAGS
 
-	number_of_publics = ((offsetNFT - offsetPFT) >>> 3);
-	number_of_pubvars = ((offsetTAGS - offsetPVT) >>> 3);
+	__smartcmd_number_of_publics = ((__smartcmd_offsetNFT - __smartcmd_offsetPFT) >>> 3);
+	__smartcmd_number_of_pubvars = ((__smartcmd_offsetTAGS - __smartcmd_offsetPVT) >>> 3);
 
-	for (new pubfunc_idx = 0; pubfunc_idx < number_of_publics; pubfunc_idx++)
+	for (new pubfunc_idx = 0; pubfunc_idx < __smartcmd_number_of_publics; pubfunc_idx++)
 	{
 		if (pubfunc_idx == MAX_PUBLIC_FUNCTIONS)
 		{
-			printf("[ERROR] MAX_PUBLIC_FUNCTIONS (Current Value: %d) must be set to %d or higher.", MAX_PUBLIC_FUNCTIONS, number_of_publics);
+			printf("[ERROR] MAX_PUBLIC_FUNCTIONS (Current Value: %d) must be set to %d or higher.", MAX_PUBLIC_FUNCTIONS, __smartcmd_number_of_publics);
 			print("[WARNING] All commands may not work as expected.");
 			crash = true;
 			break;
 		}
 
-		addr = (pubfunc_idx << 3) + offsetPFT + 4;
+		addr = (pubfunc_idx << 3) + __smartcmd_offsetPFT + 4;
 
 		#emit LREF.S.pri addr
-		#emit LOAD.alt offsetDAT
+		#emit LOAD.alt __smartcmd_offsetDAT
 		#emit ADD
 		#emit STOR.S.pri addr
 
@@ -219,15 +228,15 @@ static izcmd_Init()
 
 		if (tmp != ((('_') << 24) | (('d') << 16) | (('m') << 8) | ('c')))	continue; {}
 
-		strcat(izcmd_cmd_funcname[izcmd_cmd_total_count], "cmd_", MAX_FUNC_NAME);
+		strcat(__const_smartcmd_funcname[__smartcmd_cmd_total_count], "cmd_", MAX_FUNC_NAME);
 
 		#emit LOAD.S.pri addr
 		#emit ADD.C 4
 		#emit STOR.S.pri addr
 
-		LoadString(addr, izcmd_cmd_funcname[izcmd_cmd_total_count][4]);
+		__smartcmd_LoadString(addr, __const_smartcmd_funcname[__smartcmd_cmd_total_count][4]);
 
-		#emit LOAD.pri offsetPFT
+		#emit LOAD.pri __smartcmd_offsetPFT
 		#emit LOAD.S.alt  pubfunc_idx
 		#emit SHL.C.alt   3
 		#emit ADD
@@ -235,29 +244,29 @@ static izcmd_Init()
 		#emit LREF.S.pri  addr
 		#emit STOR.S.pri  addr
 
-		izcmd_cmd_idx_id_map[pubfunc_idx] = izcmd_cmd_OPCT_idx_id[pubfunc_idx] = izcmd_cmd_total_count;
-		izcmd_cmd_id_oidx_map[izcmd_cmd_total_count] = izcmd_cmd_id_pidx_map[izcmd_cmd_total_count] = pubfunc_idx;
+		__const_smartcmd_fidx_ocid_map[pubfunc_idx] = __smartcmd_fidx_pcid_map[pubfunc_idx] = __smartcmd_cmd_total_count;
+		__const_smartcmd_cid_ofidx_map[__smartcmd_cmd_total_count] = __smartcmd_cid_pfidx_map[__smartcmd_cmd_total_count] = pubfunc_idx;
 
-		_SetCommandProperty(izcmd_cmd_total_count, COMMAND_ENABLED);
-		izcmd_cmd_paddress[izcmd_cmd_total_count] = addr;
+		__SetCommandProperty(__smartcmd_cmd_total_count, __smartcmd_CMD_ENABLED);
+		__smartcmd_pfaddress[__smartcmd_cmd_total_count] = addr;
 
-		izcmd_cmd_total_count++;
-		izcmd_cmd_enabled_count++;
+		__smartcmd_cmd_total_count++;
+		__smartcmd_cmd_enabled_count++;
 
-		if (izcmd_cmd_total_count == MAX_COMMANDS)
+		if (__smartcmd_cmd_total_count == MAX_COMMANDS)
 		{
-			printf("[ERROR] MAX_COMMANDS (Current Value: %d) must be set to larger number.", izcmd_cmd_total_count);
+			printf("[ERROR] MAX_COMMANDS (Current Value: %d) must be set to larger number.", __smartcmd_cmd_total_count);
 			print("[WARNING] All commands may not work as expected.");
 			crash = true;
 			break;
 		}
 	}
-	for (new pubvar_idx = 0; pubvar_idx < number_of_pubvars; pubvar_idx++)
+	for (new pubvar_idx = 0; pubvar_idx < __smartcmd_number_of_pubvars; pubvar_idx++)
 	{
-		addr = (pubvar_idx << 3) + offsetPVT + 4;
+		addr = (pubvar_idx << 3) + __smartcmd_offsetPVT + 4;
 
 		#emit LREF.S.pri addr
-		#emit LOAD.alt offsetDAT
+		#emit LOAD.alt __smartcmd_offsetDAT
 		#emit ADD
 		#emit STOR.S.pri addr
 
@@ -270,13 +279,13 @@ static izcmd_Init()
 			#emit ADD.C 4
 			#emit STOR.S.pri addr
 
-			LoadString(addr, cmd_name[4]);
+			__smartcmd_LoadString(addr, cmd_name[4]);
 			
 			new cmd_idx = funcidx(cmd_name);
 			if (cmd_idx == -1) break;
 			if (cmd_idx >= MAX_PUBLIC_FUNCTIONS) break; {}
 
-			#emit LOAD.pri offsetPVT
+			#emit LOAD.pri __smartcmd_offsetPVT
 			#emit LOAD.S.alt  pubvar_idx
 			#emit SHL.C.alt   3
 			#emit ADD
@@ -289,10 +298,10 @@ static izcmd_Init()
 
 			new x, n;
 
-			#emit CONST.alt izcmd_cmd_idx_id_map
+			#emit CONST.alt __const_smartcmd_fidx_ocid_map
 			#emit LOAD.S.pri cmd_idx
 			#emit LIDX
-			#emit CONST.alt izcmd_cmd_flags
+			#emit CONST.alt __smartcmd_cflags
 			#emit IDXADDR
 
 			#emit STOR.S.pri x
@@ -309,13 +318,13 @@ static izcmd_Init()
 			#emit ADD.C 4
 			#emit STOR.S.pri addr
 
-			LoadString(addr, cmd_name[4]);
+			__smartcmd_LoadString(addr, cmd_name[4]);
 
 			new cmd_idx = funcidx(cmd_name);
 			if (cmd_idx == -1) break;
 			if (cmd_idx >= MAX_PUBLIC_FUNCTIONS) break;
 
-			new cmdid = izcmd_cmd_idx_id_map[cmd_idx];
+			new cmdid = __const_smartcmd_fidx_ocid_map[cmd_idx];
 
 			#emit PUSH.S cmd_name //doesn't matter what is pushed
 			#emit PUSH.C 0
@@ -325,7 +334,7 @@ static izcmd_Init()
 			#emit LCTRL      6
 			#emit ADD.C      40
 			#emit PUSH.pri
-			#emit CONST.alt izcmd_cmd_paddress
+			#emit CONST.alt __smartcmd_pfaddress
 			#emit LOAD.S.pri cmdid
 			#emit LIDX
 			#emit SCTRL      6
@@ -336,13 +345,13 @@ static izcmd_Init()
 			#emit ADD.C 4
 			#emit STOR.S.pri addr
 
-			LoadString(addr, cmd_name[4]);
+			__smartcmd_LoadString(addr, cmd_name[4]);
 
 			new cmd_idx = funcidx(cmd_name);
 			if (cmd_idx == -1) break;
 			if (cmd_idx >= MAX_PUBLIC_FUNCTIONS) break; {}
 
-			#emit LOAD.pri offsetPVT
+			#emit LOAD.pri __smartcmd_offsetPVT
 			#emit LOAD.S.alt  pubvar_idx
 			#emit SHL.C.alt   3
 			#emit ADD
@@ -350,7 +359,7 @@ static izcmd_Init()
 			#emit LREF.S.pri  addr
 			#emit STOR.S.pri  addr
 
-			#emit CONST.alt izcmd_cmd_idx_id_map
+			#emit CONST.alt __const_smartcmd_fidx_ocid_map
 			#emit LOAD.S.pri cmd_idx
 			#emit LIDX
 			#emit LOAD.S.alt addr
@@ -360,7 +369,7 @@ static izcmd_Init()
 	if (crash)
 	{
 		new x = MAX_COMMANDS;
-		return izcmd_cmd_paddress[x];
+		return __smartcmd_pfaddress[x];
 	}
 	return 1;
 }
@@ -368,7 +377,7 @@ static izcmd_Init()
 #if defined FILTERSCRIPT
 	public OnFilterScriptInit()
 	{
-		izcmd_Init();
+		__smartcmd_init();
 		#if defined izcmd_OnFilterScriptInit
 			return izcmd_OnFilterScriptInit();
 		#else
@@ -389,7 +398,7 @@ static izcmd_Init()
 #else
 	public OnGameModeInit()
 	{
-		izcmd_Init();
+		__smartcmd_init();
 		#if defined izcmd_OnGameModeInit
 			return izcmd_OnGameModeInit();
 		#else
@@ -473,7 +482,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 
 	if ((tmp = funcidx(prefix)) != -1)
 	{
-		if ((cmdid = izcmd_cmd_OPCT_idx_id[tmp]) != INVALID_COMMAND_ID && _IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+		if ((cmdid = __smartcmd_fidx_pcid_map[tmp]) != INVALID_COMMAND_ID && __IsCommandPropertySet(cmdid, __smartcmd_CMD_ENABLED))
 		{
 			#if defined OnPlayerCommandReceived
 				if (!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
@@ -488,7 +497,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 			#emit ADD.C      40
 			#emit PUSH.pri
 
-			#emit CONST.alt izcmd_cmd_paddress
+			#emit CONST.alt __smartcmd_pfaddress
 			#emit LOAD.S.pri cmdid
 			#emit LIDX
 			#emit SCTRL      6
@@ -586,7 +595,7 @@ stock GetCommandID(const cmd[])
 	new idx = funcidx(funcname);
 	if (idx == -1)
 		return INVALID_COMMAND_ID;
-	return izcmd_cmd_idx_id_map[idx];
+	return __const_smartcmd_fidx_ocid_map[idx];
 }
 
 /*******************************************************************************************************************************
@@ -607,10 +616,10 @@ stock GetCommandID(const cmd[])
 *******************************************************************************************************************************/
 stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return 0;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return 0;
 
 	cmd[0] = 0;
-	strcat(cmd, izcmd_cmd_funcname[cmdid][4], len);
+	strcat(cmd, __const_smartcmd_funcname[cmdid][4], len);
 	return 1;
 }
 
@@ -643,15 +652,15 @@ stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 *******************************************************************************************************************************/
 stock GetAlternateCommands(cmdid, cmdidlist[], cmdidlist_len = sizeof(cmdidlist))
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	new count = 0;
-	if (_IsCommandPropertySet(cmdid, COMMAND_HAS_ALTERNATE))
+	if (__IsCommandPropertySet(cmdid, __smartcmd_CMD_HAS_ALTERNATE))
 	{
-		for (new id = 0; id < izcmd_cmd_total_count; id++)
+		for (new id = 0; id < __smartcmd_cmd_total_count; id++)
 		{
 			if (id == cmdid) continue;
-			if (izcmd_cmd_id_pid_map[id] == cmdid)
+			if (__smartcmd_cid_pid_map[id] == cmdid)
 			{
 				cmdidlist[count++] = id;
 				if(count == cmdidlist_len)
@@ -689,8 +698,8 @@ stock GetAlternateCommands(cmdid, cmdidlist[], cmdidlist_len = sizeof(cmdidlist)
 *******************************************************************************************************************************/
 stock IsCommandAlternate(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	return !!(_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE));
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	return !!(__IsCommandPropertySet(cmdid, __smartcmd_CMD_IS_ALTERNATE));
 }
 
 /*******************************************************************************************************************************
@@ -712,8 +721,8 @@ stock IsCommandAlternate(cmdid)
 *******************************************************************************************************************************/
 stock GetCommandFunctionID(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	return izcmd_cmd_id_oidx_map[cmdid];
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	return __const_smartcmd_cid_ofidx_map[cmdid];
 }
 
 /*******************************************************************************************************************************
@@ -736,8 +745,8 @@ stock GetCommandFunctionID(cmdid)
 *******************************************************************************************************************************/
 stock GetPointingCommandFunctionID(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	return izcmd_cmd_id_pidx_map[cmdid];
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	return __smartcmd_cid_pfidx_map[cmdid];
 }
 
 /*******************************************************************************************************************************
@@ -745,7 +754,7 @@ stock GetPointingCommandFunctionID(cmdid)
 	<para>finds the command to which the given command points to</para>
 	<param name="cmdid">command id</param>
 	<returns>
-		true if the command exists
+		pointing command id
 	</returns>
 	<remarks>
 		pointing command - the command which is executed when the command is used.
@@ -766,8 +775,8 @@ stock GetPointingCommandFunctionID(cmdid)
 *******************************************************************************************************************************/
 stock GetPointingCommandID(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	return izcmd_cmd_id_pid_map[cmdid];
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	return __smartcmd_cid_pid_map[cmdid];
 }
 
 /*******************************************************************************************************************************
@@ -788,7 +797,7 @@ stock GetPointingCommandID(cmdid)
 *******************************************************************************************************************************/
 stock GetCommandFunctionName(cmdid, dest[], len = sizeof(dest))
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 	dest[0] = 0;
 	strcat(dest, "cmd_", len);
 	GetCommandName(cmdid, dest[4], len - 4);
@@ -809,7 +818,7 @@ stock GetCommandFunctionName(cmdid, dest[], len = sizeof(dest))
 *******************************************************************************************************************************/
 stock GetEnabledCommandCount()
 {
-	return izcmd_cmd_enabled_count;
+	return __smartcmd_cmd_enabled_count;
 }
 
 /*******************************************************************************************************************************
@@ -826,7 +835,7 @@ stock GetEnabledCommandCount()
 *******************************************************************************************************************************/
 stock GetDisabledCommandCount()
 {
-	return izcmd_cmd_total_count - izcmd_cmd_enabled_count;
+	return __smartcmd_cmd_total_count - __smartcmd_cmd_enabled_count;
 }
 
 /*******************************************************************************************************************************
@@ -843,7 +852,7 @@ stock GetDisabledCommandCount()
 *******************************************************************************************************************************/
 stock GetTotalCommandCount()
 {
-	return izcmd_cmd_total_count;
+	return __smartcmd_cmd_total_count;
 }
 
 /*******************************************************************************************************************************
@@ -863,12 +872,12 @@ stock GetTotalCommandCount()
 *******************************************************************************************************************************/
 stock EnableCommand(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	if (_IsCommandPropertySet(cmdid, COMMAND_ENABLED)) return 0;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (__IsCommandPropertySet(cmdid, __smartcmd_CMD_ENABLED)) return 0;
 
-	_SetCommandProperty(cmdid, COMMAND_ENABLED);
+	__SetCommandProperty(cmdid, __smartcmd_CMD_ENABLED);
 
-	izcmd_cmd_enabled_count++;
+	__smartcmd_cmd_enabled_count++;
 	return 1;
 }
 
@@ -889,12 +898,12 @@ stock EnableCommand(cmdid)
 *******************************************************************************************************************************/
 stock DisableCommand(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	if (!_IsCommandPropertySet(cmdid, COMMAND_ENABLED)) return 0;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!__IsCommandPropertySet(cmdid, __smartcmd_CMD_ENABLED)) return 0;
 
-	_UnsetCommandProperty(cmdid, COMMAND_ENABLED);
+	__UnsetCommandProperty(cmdid, __smartcmd_CMD_ENABLED);
 
-	izcmd_cmd_enabled_count--;
+	__smartcmd_cmd_enabled_count--;
 	return 1;
 }
 
@@ -913,8 +922,8 @@ stock DisableCommand(cmdid)
 *******************************************************************************************************************************/
 stock IsCommandEnabled(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
-	return !!(_IsCommandPropertySet(cmdid, COMMAND_ENABLED));
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	return !!(__IsCommandPropertySet(cmdid, __smartcmd_CMD_ENABLED));
 }
 
 /*******************************************************************************************************************************
@@ -939,9 +948,9 @@ stock IsCommandEnabled(cmdid)
 *******************************************************************************************************************************/
 stock SetCommandFlags(cmdid, flags)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
-	izcmd_cmd_flags[cmdid][0] = flags;
+	__smartcmd_cflags[cmdid][0] = flags;
 	return 1;
 }
 
@@ -967,15 +976,15 @@ stock SetCommandFlags(cmdid, flags)
 *******************************************************************************************************************************/
 stock GetCommandFlags(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
-	#emit CONST.alt izcmd_cmd_flags
+	#emit CONST.alt __smartcmd_cflags
 	#emit LOAD.S.pri cmdid
 	#emit LIDX
 	#emit LOAD.I
 	#emit RETN
 
-	return  izcmd_cmd_flags[cmdid][0];
+	return  __smartcmd_cflags[cmdid][0];
 }
 
 /*******************************************************************************************************************************
@@ -996,28 +1005,28 @@ stock GetCommandFlags(cmdid)
 *******************************************************************************************************************************/
 stock SetPointingCommandIDToSelf(cmdid)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
-	if (_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
+	if (__IsCommandPropertySet(cmdid, __smartcmd_CMD_IS_ALTERNATE))
 	{
-		new ocmdid = izcmd_cmd_id_pidx_map[cmdid];
+		new ocmdid = __smartcmd_cid_pfidx_map[cmdid];
 
-		_UnsetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
-		_UnsetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+		__UnsetCommandProperty(cmdid, __smartcmd_CMD_IS_ALTERNATE);
+		__UnsetCommandProperty(ocmdid, __smartcmd_CMD_HAS_ALTERNATE);
 
-		for (new id = 0; id < izcmd_cmd_total_count; id++)
+		for (new id = 0; id < __smartcmd_cmd_total_count; id++)
 		{
 			if (id == ocmdid) continue;
 			if (id == cmdid) continue;
 
-			if (izcmd_cmd_id_pidx_map[id] == cmdid)
+			if (__smartcmd_cid_pfidx_map[id] == cmdid)
 			{
-				_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+				__SetCommandProperty(ocmdid, __smartcmd_CMD_HAS_ALTERNATE);
 				break;
 			}
 		}
 	}
-	izcmd_cmd_id_pid_map[cmdid] = cmdid;
+	__smartcmd_cid_pid_map[cmdid] = INVALID_COMMAND_ID;
 	return 1;
 }
 
@@ -1060,34 +1069,34 @@ stock SetPointingCommandIDToSelf(cmdid)
 *******************************************************************************************************************************/
 stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, bool:updatePFT = false)
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	new idx_funcname = funcidx(funcname);
 	if (idx_funcname == -1) return 0;
 
-	if (_IsCommandPropertySet(cmdid, COMMAND_IS_ALTERNATE))
+	if (__IsCommandPropertySet(cmdid, __smartcmd_CMD_IS_ALTERNATE))
 	{
-		new ocmdid = izcmd_cmd_id_pidx_map[cmdid];
+		new ocmdid = __smartcmd_cid_pfidx_map[cmdid];
 
-		_UnsetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
-		_UnsetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+		__UnsetCommandProperty(cmdid, __smartcmd_CMD_IS_ALTERNATE);
+		__UnsetCommandProperty(ocmdid, __smartcmd_CMD_HAS_ALTERNATE);
 
-		for (new id = 0; id < izcmd_cmd_total_count; id++)
+		for (new id = 0; id < __smartcmd_cmd_total_count; id++)
 		{
 			if (id == ocmdid) continue;
 			if (id == cmdid) continue;
 
-			if (izcmd_cmd_id_pidx_map[id] == cmdid)
+			if (__smartcmd_cid_pfidx_map[id] == cmdid)
 			{
-				_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
+				__SetCommandProperty(ocmdid, __smartcmd_CMD_HAS_ALTERNATE);
 				break;
 			}
 		}
 	}
 
-	new ocmdid = izcmd_cmd_idx_id_map[idx_funcname], oaddr, caddr;
+	new ocmdid = __const_smartcmd_fidx_ocid_map[idx_funcname], oaddr, caddr;
 
-	#emit LOAD.pri offsetPFT
+	#emit LOAD.pri __smartcmd_offsetPFT
 	#emit LOAD.S.alt  idx_funcname
 	#emit SHL.C.alt   3
 	#emit ADD
@@ -1095,29 +1104,29 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 	#emit LREF.S.pri  oaddr
 	#emit STOR.S.pri  oaddr
 
-	izcmd_cmd_id_pidx_map[cmdid] = idx_funcname;
-	izcmd_cmd_id_pid_map[cmdid] = INVALID_COMMAND_ID;
-	izcmd_cmd_paddress[cmdid] = oaddr;
+	__smartcmd_cid_pfidx_map[cmdid] = idx_funcname;
+	__smartcmd_cid_pid_map[cmdid] = INVALID_COMMAND_ID;
+	__smartcmd_pfaddress[cmdid] = oaddr;
 
 	if (ocmdid != INVALID_COMMAND_ID)
 	{
-		izcmd_cmd_id_pid_map[cmdid] = ocmdid;
+		__smartcmd_cid_pid_map[cmdid] = ocmdid;
 		if (updateCID)
 		{
-			_SetCommandProperty(cmdid, COMMAND_IS_ALTERNATE);
-			_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
-			izcmd_cmd_OPCT_idx_id[izcmd_cmd_id_oidx_map[cmdid]] = ocmdid;
+			__SetCommandProperty(cmdid, __smartcmd_CMD_IS_ALTERNATE);
+			__SetCommandProperty(ocmdid, __smartcmd_CMD_HAS_ALTERNATE);
+			__smartcmd_fidx_pcid_map[__const_smartcmd_cid_ofidx_map[cmdid]] = ocmdid;
 		}
 	}
 
 	if (updatePFT)
 	{
-		#emit CONST.alt izcmd_cmd_id_oidx_map
+		#emit CONST.alt __const_smartcmd_cid_ofidx_map
 		#emit LOAD.S.pri cmdid
 		#emit LIDX
 
 		#emit SHL.C.pri   3
-		#emit LOAD.alt offsetPFT
+		#emit LOAD.alt __smartcmd_offsetPFT
 		#emit ADD
 		#emit STOR.S.pri  caddr
 		#emit LOAD.S.pri oaddr
@@ -1152,18 +1161,18 @@ stock ReassignCommandFunction(cmdid, const funcname[], bool:updateCID = false, b
 stock _ExecuteCommand(const cmd[], playerid, &success, params[] = "")
 {
 	new cmdid = GetCommandID(cmd), pos;
-	if (!(0 <= cmdid < izcmd_cmd_total_count))
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count))
 	{
 		success = INVALID_COMMAND_ID;
 		return 0;
 	}
 
 	success = 2;
-	if (_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+	if (__IsCommandPropertySet(cmdid, __smartcmd_CMD_ENABLED))
 	{
 		while (params[pos] == ' ') pos++;
 
-		success = izcmd_cmd_handled = 1;
+		success = __smartcmd_cmd_handled = 1;
 
 		#emit LOAD.S.alt params
 		#emit LOAD.S.pri pos
@@ -1177,7 +1186,7 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[] = "")
 		#emit ADD.C      40
 		#emit PUSH.pri
 
-		#emit CONST.alt izcmd_cmd_paddress
+		#emit CONST.alt __smartcmd_pfaddress
 		#emit LOAD.S.pri cmdid
 		#emit LIDX
 		#emit SCTRL      6
@@ -1185,7 +1194,7 @@ stock _ExecuteCommand(const cmd[], playerid, &success, params[] = "")
 		#emit STOR.S.pri pos
 
 		state cmdMode:normal;
-		if (izcmd_cmd_handled == 0) success = 0;
+		if (__smartcmd_cmd_handled == 0) success = 0;
 
 		#emit LOAD.S.pri pos
 		#emit STACK 8
@@ -1243,7 +1252,7 @@ stock EmulateCommand(playerid, cmdtext[])
 *******************************************************************************************************************************/
 stock EmulateCommandEx(cmdid, playerid, params[])
 {
-	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
+	if (!(0 <= cmdid < __smartcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
 	new cmdtext[MAX_CLIENT_MSG_LENGTH], pos, retval;
 	cmdtext[0] = '/';
@@ -1257,9 +1266,9 @@ stock EmulateCommandEx(cmdid, playerid, params[])
 		while (params[pos] == ' ') pos++;
 	}
 
-	state cmdMode : normal;
+	state cmdMode:normal;
 
-	if (_IsCommandPropertySet(cmdid, COMMAND_ENABLED))
+	if (__IsCommandPropertySet(cmdid, __smartcmd_CMD_ENABLED))
 	{
 		#if defined OnPlayerCommandReceived
 		if (!OnPlayerCommandReceived(cmdid, playerid, cmdtext)) return 1; {}
@@ -1277,7 +1286,7 @@ stock EmulateCommandEx(cmdid, playerid, params[])
 		#emit ADD.C      40
 		#emit PUSH.pri
 
-		#emit CONST.alt izcmd_cmd_paddress
+		#emit CONST.alt __smartcmd_pfaddress
 		#emit LOAD.S.pri cmdid
 		#emit LIDX
 		#emit SCTRL      6
@@ -1301,20 +1310,20 @@ stock EmulateCommandEx(cmdid, playerid, params[])
 	#endif
 }
 /******************************************************************************************************************************/
-stock _izcmdp_register_alias(ocmdid, acmdid)
+stock __smartcmd_register_alias(ocmdid, acmdid)
 {
-	new	aidx = izcmd_cmd_id_oidx_map[acmdid], aaddr, oaddr;
+	new	aidx = __const_smartcmd_cid_ofidx_map[acmdid], aaddr, oaddr;
 
-	_SetCommandProperty(ocmdid, COMMAND_HAS_ALTERNATE);
-	_SetCommandProperty(acmdid, COMMAND_IS_ALTERNATE);
+	__SetCommandProperty(ocmdid, __smartcmd_CMD_HAS_ALTERNATE);
+	__SetCommandProperty(acmdid, __smartcmd_CMD_IS_ALTERNATE);
 
-	izcmd_cmd_OPCT_idx_id[aidx] = ocmdid;
-	izcmd_cmd_id_pidx_map[acmdid] = izcmd_cmd_id_pidx_map[ocmdid];
-	izcmd_cmd_id_pid_map[acmdid] = ocmdid;
-	oaddr = izcmd_cmd_paddress[acmdid] = izcmd_cmd_paddress[ocmdid];
-	izcmd_cmd_flags[acmdid] = izcmd_cmd_flags[ocmdid];
+	__smartcmd_fidx_pcid_map[aidx] = ocmdid;
+	__smartcmd_cid_pfidx_map[acmdid] = __smartcmd_cid_pfidx_map[ocmdid];
+	__smartcmd_cid_pid_map[acmdid] = ocmdid;
+	oaddr = __smartcmd_pfaddress[acmdid] = __smartcmd_pfaddress[ocmdid];
+	__smartcmd_cflags[acmdid] = __smartcmd_cflags[ocmdid];
 
-	#emit LOAD.pri offsetPFT
+	#emit LOAD.pri __smartcmd_offsetPFT
 	#emit LOAD.S.alt  aidx
 	#emit SHL.C.alt   3
 	#emit ADD
