@@ -1,31 +1,30 @@
 #include <a_samp>
 
 //#define IZCMD_ENABLE_CASE_SENSITIVITY
-#define CMD_DEFAULT_FLAG 133
-#include <smartcmd>
-/*******************************************************************************************************/
-#define ITR 100000
-/*******************************************************************************************************/
 enum  (*=2)
 {
-	ADMIN_COMMAND_FLAG = 1,
-	TEST1,
-	TEST2
+	TEST_FLAG1 = 1,
+	TEST_FLAG2,
+	TEST_FLAG3
 }
-CMD<ADMIN_COMMAND_FLAG>:aaaa[params](cmdid, playerid, params[])
+#define CMD_DEFAULT_FLAG (TEST_FLAG3 | TEST_FLAG2)
+
+#include <smartcmd>
+/*******************************************************************************************************/
+CMD<TEST_FLAG1>:aaaa[params](cmdid, playerid, params[])
 {
 	printf("[AAAA]params cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
 	return CMD_SUCCESS;
 }
-CMD<ADMIN_COMMAND_FLAG>:aaaa[help](cmdid, playerid, params[])
+CMD<TEST_FLAG1>:aaaa[help](cmdid, playerid, params[])
 {
 	printf("[AAAA]help cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
 	return CMD_SUCCESS;
 }
-CMD<ADMIN_COMMAND_FLAG>:aaaa(cmdid, playerid, params[])
+CMD<TEST_FLAG1>:aaaa(cmdid, playerid, params[])
 {
 	flg_aaaa = flags:0;
-	printf("[AAAA]normal cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
+	//printf("[AAAA]normal cmdid:%d playerid:%d params:%s", cmdid, playerid, params);
 	return 1;
 }
 ALT:altname = CMD:aaaa;
@@ -36,10 +35,10 @@ main()
 	if(DoesCommandExist("aaaa") == false) print("[TEST1] DoesCommandExist failed.");
 	if(DoesCommandExist("aa1234567aa") == true) print("[TEST2] DoesCommandExist failed.");
 	if(GetCommandID("aaaa") != cid_aaaa) print("[TEST3] GetCommandID failed.");
-	if(GetCommandID("aa1234567aa") != -1) print("[TEST4] GetCommandID failed.");
+	if(GetCommandID("aa1234567aa") != INVALID_COMMAND_ID) print("[TEST4] GetCommandID failed.");
 
 	new str[128];
-	GetCommandName(3, str);
+	GetCommandName(cid_aaaa, str);
 	if(strcmp(str, "aaaa")) print("[TEST5] GetCommandName failed.");
 
 	if(GetAlternateCommands(cid_aaaa, str) != 1) print("[TEST5] GetAlternateCommands failed.");
@@ -60,10 +59,13 @@ main()
 	if(EnableCommand(1) != 0) print("[TEST12] EnableCommand failed.");
 	if(DisableCommand(1) != 1) print("[TEST13] DisableCommand failed.");
 	if(IsCommandEnabled(1)) print("[TEST14] IsCommandEnabled failed.");
+	//GetEnabledCommandCount/GetTotalCommandCount not tested
 	if(GetDisabledCommandCount() != 1) print("[TEST15] GetDisabledCommandCount failed.");
 	if(EnableCommand(1) != 1) print("[TEST16] EnableCommand failed.");
 
-	if(GetCommandFlags(cid_aaaa) != ADMIN_COMMAND_FLAG) printf("[TEST17] GetCommandFlags failed. %d");
+	if(GetCommandFlags(cid_aaaa) != (TEST_FLAG1)) printf("[TEST17] GetCommandFlags failed. %d");
+	SetCommandFlags(cid_aaaa, TEST_FLAG1 | CMD_DEFAULT_FLAG);
+	if(GetCommandFlags(cid_aaaa) != (TEST_FLAG1 | CMD_DEFAULT_FLAG)) printf("[TEST18] GetCommandFlags failed. %d");
 
 	new success;
 	ExecuteCommand("aaaa", help, 0, success, "");
@@ -79,12 +81,14 @@ main()
 	EmulateCommand(10, "/disablecmd aaaa");
 	EmulateCommand(10, "/aaaa");
 	EmulateCommand(10, "/disablecmd aaaa");
+	EmulateCommandEx(cid_altname, 10, "this is test params before");
+	SetPointingCommandIDToSelf(cid_altname);
+	EmulateCommandEx(cid_altname, 10, "this is test params after");
 	EmulateCommand(10, "/enablecmd aaaa");
 	EmulateCommand(10, "/aaaa");
-	//EmulateCommandEx(cid_aaaa, 10, "this is test params");
-	//SetPointingCommandIDToSelf(cid_aaaa);
-	//---TESTING---//
-	return 0;
+	
+	//---BENCHMARK---//
+	#define ITR 100000
 	
 	new Float:avg;
 	for(new j = 0; j < 10; j++)
@@ -112,7 +116,7 @@ main()
 /*******************************************************************************************************/
 public OnPlayerCommandReceived(cmdid, playerid, cmdtext[])
 {
-	printf("[OPCR] cmdid:%d playerid:%d cmdtext:%s", cmdid, playerid, cmdtext);
+	//printf("[OPCR] cmdid:%d playerid:%d cmdtext:%s", cmdid, playerid, cmdtext);
 	return CMD_SUCCESS;
 }
 public OnPlayerCommandPerformed(cmdid, playerid, cmdtext[], success)
