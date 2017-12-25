@@ -1,7 +1,8 @@
 /*******************************************************************************************************************************
 SmartCMD a.k.a Improved ZCMD Plus (iZCMD+)
 This include is a feature rich version of iZCMD.
-Version: 0.3 beta (22nd November)
+
+Version: 0.3.2 beta (25th December 2017)
 
 GitHub Link: https://github.com/YashasSamaga/SmartCMD
 *******************************************************************************************************************************/
@@ -14,6 +15,31 @@ GitHub Link: https://github.com/YashasSamaga/SmartCMD
 #if !defined CMD_DEFAULT_FLAG
 	#define CMD_DEFAULT_FLAG 0
 #endif
+
+/* return value to be used in command functions */
+#define CMD_SUCCESS 1
+#define CMD_FAILURE 0
+
+#define INVALID_COMMAND_ID			(-1)
+
+#define MAX_CLIENT_MSG_LENGTH		(144)
+#define MAX_FUNC_NAME				(32)
+
+#define MAX_COMMAND_NAME            (28)
+
+#if !defined MAX_PUBLIC_FUNCTIONS
+	#define MAX_PUBLIC_FUNCTIONS	(1024)
+#endif
+
+#if !defined MAX_COMMANDS
+	#define MAX_COMMANDS			(500)
+#endif
+
+#if !defined isnull
+	#define isnull(%1) ((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
+#endif
+/******************************************************************************************************************************/
+/* preprocessor directives to handle command declaration syntax */
 
 const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 
@@ -59,28 +85,6 @@ const _@CMD_DEFAULT_FLAG = (CMD_DEFAULT_FLAG);
 #define _CCAV(%1) \
             public alt_%1=0; \
             stock alt@%1=alt_%1;
-
-#define CMD_SUCCESS 1
-#define CMD_FAILURE 0
-
-#define INVALID_COMMAND_ID			(-1)
-
-#define MAX_CLIENT_MSG_LENGTH		(144)
-#define MAX_FUNC_NAME				(32)
-
-#define MAX_COMMAND_NAME            (28)
-
-#if !defined MAX_PUBLIC_FUNCTIONS
-	#define MAX_PUBLIC_FUNCTIONS	(1024)
-#endif
-
-#if !defined MAX_COMMANDS
-	#define MAX_COMMANDS			(500)
-#endif
-
-#if !defined isnull
-	#define isnull(%1) ((!(%1[0])) || (((%1[0]) == '\1') && (!(%1[1]))))
-#endif
 /******************************************************************************************************************************/
 #if defined OnPlayerCommandReceived
 	forward OnPlayerCommandReceived(cmdid, playerid, cmdtext[]);
@@ -410,7 +414,7 @@ public OnPlayerCommandText(playerid, cmdtext[])
 	static prefix[4] = { 'c', 'm', 'd', '_' }, funcname[MAX_CLIENT_MSG_LENGTH - 4];
 	new cmdid, tmp, addr, faddr;
 
-	state cmdMode : normal;
+	state cmdMode:normal;
 
 	#emit CONST.pri funcname
 	#emit STOR.S.pri faddr
@@ -580,8 +584,8 @@ stock GetCommandID(const cmd[])
 	strcat(funcname, cmd);
 
 	new idx = funcidx(funcname);
-
-	if (idx == -1) return INVALID_COMMAND_ID;
+	if (idx == -1)
+		return INVALID_COMMAND_ID;
 	return izcmd_cmd_idx_id_map[idx];
 }
 
@@ -615,8 +619,9 @@ stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 	<para>Gets a list of alternate command names associated with the given command</para>
 	<param name="cmdid">command id</param>
 	<param name="cmdidlist">array where the alternate command ids must be stored</param>
+	<param name="cmdidlist_len">length of 'cmdidlist' array</param>
 	<returns>
-		the number of alternate commands or INVALUID_COMMAND_IN in case cmdid passed has an invalid id.
+		the number of alternate commands or INVALID_COMMAND_ID in case cmdid passed has an invalid id.
 	</returns>
 	<remarks>
 		The function does not do boundary checks on the cmdidlist array. It is required that the array passed is sufficiently large.
@@ -636,7 +641,7 @@ stock GetCommandName(cmdid, cmd[], len = sizeof(cmd))
 		</code>
 	</example>
 *******************************************************************************************************************************/
-stock GetAlternateCommands(cmdid, cmdidlist[])
+stock GetAlternateCommands(cmdid, cmdidlist[], cmdidlist_len = sizeof(cmdidlist))
 {
 	if (!(0 <= cmdid < izcmd_cmd_total_count)) return INVALID_COMMAND_ID;
 
@@ -647,7 +652,11 @@ stock GetAlternateCommands(cmdid, cmdidlist[])
 		{
 			if (id == cmdid) continue;
 			if (izcmd_cmd_id_pid_map[id] == cmdid)
+			{
 				cmdidlist[count++] = id;
+				if(count == cmdidlist_len)
+				    break;
+			}
 		}
 	}
 	return count;
