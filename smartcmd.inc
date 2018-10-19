@@ -18,19 +18,25 @@ GitHub Link: https://github.com/YashasSamaga/SmartCMD
 	#define CMD_DEFAULT_FLAG 0
 #endif
 
+#define INVALID_COMMAND_ID			(-1)
+
 /* return value to be used in command functions */
 #define CMD_SUCCESS 1
 #define CMD_FAILURE 0
 
-#define INVALID_COMMAND_ID			(-1)
+#if !defined MAX_CLIENT_MSG_LENGTH
+	#define MAX_CLIENT_MSG_LENGTH		(144)
+#endif
 
-#define MAX_CLIENT_MSG_LENGTH		(144)
-#define MAX_FUNC_NAME				(32)
+#if !defined MAX_FUNC_NAME
+	#define MAX_FUNC_NAME			(32)
+#endif
 
-#define MAX_COMMAND_NAME            (28)
+// account for the "cmd_" prefix
+#define MAX_COMMAND_NAME            		(MAX_FUNC_NAME - 4)
 
 #if !defined MAX_PUBLIC_FUNCTIONS
-	#define MAX_PUBLIC_FUNCTIONS	(1024)
+	#define MAX_PUBLIC_FUNCTIONS		(1024)
 #endif
 
 #if !defined MAX_COMMANDS
