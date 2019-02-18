@@ -1,11 +1,11 @@
 {
-	"user": "YashasSamaga",
-	"repo": "SmartCMD",
-	"dependencies": ["sampctl/samp-stdlib"],
-	"contributors": [
+    "user": "YashasSamaga",
+    "repo": "SmartCMD",
+    "dependencies": ["sampctl/samp-stdlib"],
+    "contributors": [
         "Yashas",
         "Y_Less",
         "Zeex",
         "Crayder"
-	]
+    ]
 }
