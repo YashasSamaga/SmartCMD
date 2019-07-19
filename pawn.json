@@ -1,0 +1,13 @@
+{
+    "user": "YashasSamaga",
+    "repo": "SmartCMD",
+    "entry": "testing.pwn",
+    "output": "testing.amx",
+    "dependencies": ["sampctl/samp-stdlib"],
+    "contributors": [
+        "Yashas",
+        "Y_Less",
+        "Zeex",
+        "Crayder"
+    ]
+}

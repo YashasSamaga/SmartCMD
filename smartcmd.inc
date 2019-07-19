@@ -13,6 +13,11 @@ GitHub Link: https://github.com/YashasSamaga/SmartCMD
 #define SCMD_INCLUDED_VMAJOR 0
 #define SCMD_INCLUDED_VMINOR 3
 #define SCMD_INCLUDED_VPATCH 3
+
+#if !defined _samp_included
+	#include <a_samp>
+#endif
+
 /******************************************************************************************************************************/
 #if !defined CMD_DEFAULT_FLAG
 	#define CMD_DEFAULT_FLAG 0
